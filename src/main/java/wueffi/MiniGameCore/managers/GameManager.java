@@ -6,7 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -311,6 +313,29 @@ public class GameManager implements Listener {
                     }
                 }.runTaskTimer(plugin, 0, 20L);
             }
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+
+        if (lobby == null || !config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player)) {
+            player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to place this block!");
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onToolDamage(PlayerItemDamageEvent event) {
+        Player player = event.getPlayer();
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+
+        if (lobby == null || !config.getDurabilityMode()) {
+            event.setCancelled(true);
         }
     }
 }
