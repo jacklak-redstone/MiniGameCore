@@ -42,9 +42,8 @@ available-games:
 - Game2
 - Game3
 banned-players:
-- player1
-- player2
-- player3
+- 2e0749e5-4ec0-4201-b58d-c4277014749c
+- 337482fe-8a15-47f6-bea5-a84918a86393
 ```
 
 ### Loading Game-Worlds & Configuring them
