@@ -2,11 +2,13 @@ package wueffi.MiniGameCore.managers;
 
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -247,9 +249,13 @@ public class GameManager implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) {
+            event.setCancelled(false);
+            return;
+        }
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
-        if (lobby == null || !config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player)) {
+        if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player)) {
             player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to break this block!");
             event.setCancelled(true);
         }
@@ -258,6 +264,11 @@ public class GameManager implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) {
+            event.setCancelled(false);
+            return;
+        }
         if (frozenPlayers.contains(player)) {
             if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ()) {
                 event.setTo(event.getFrom());
@@ -269,11 +280,12 @@ public class GameManager implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
         if (lobby != null) {
             event.setCancelled(true);
             player.setGameMode(GameMode.SPECTATOR);
+
+            GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
             World lobbyWorld = Bukkit.getWorld(lobby.getWorldFolder().getName());
             if (lobbyWorld != null) {
@@ -320,9 +332,14 @@ public class GameManager implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) {
+            event.setCancelled(false);
+            return;
+        }
+
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
-        if (lobby == null || !config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player)) {
+        if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player)) {
             player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to place this block!");
             event.setCancelled(true);
         }
@@ -332,10 +349,39 @@ public class GameManager implements Listener {
     public void onToolDamage(PlayerItemDamageEvent event) {
         Player player = event.getPlayer();
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) {
+            event.setCancelled(false);
+            return;
+        }
+
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
-        if (lobby == null || !config.getDurabilityMode()) {
+        if (!config.getDurabilityMode()) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event) {
+        final Entity damager = event.getDamager();
+        final Entity damaged = event.getEntity();
+
+        if (damager instanceof Player && damaged instanceof Player) {
+            Lobby lobby = LobbyManager.getLobbyByPlayer((Player) damager);
+            if (lobby == null) {
+                event.setCancelled(false);
+                return;
+            }
+            if (Objects.equals(lobby.getLobbyState(), "WAITING")) {
+                damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
+                event.setCancelled(true);
+            }
+
+            GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+            if (!config.getPVPMode()) {
+                event.setCancelled(true);
+                damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
+            }
         }
     }
 }
