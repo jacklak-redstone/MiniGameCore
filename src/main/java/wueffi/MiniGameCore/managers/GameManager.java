@@ -294,7 +294,7 @@ public class GameManager implements Listener {
                 player.teleport(lobbyWorld.getSpawnLocation());
             } else {
                 getLogger().warning("Lobby world was null! " + player + "," + lobby);
-                player.teleport(alivePlayers.get(lobby).getFirst());
+                player.teleport(alivePlayers.get(lobby).get(0));
             }
             player.setGameMode(GameMode.SPECTATOR);
 
