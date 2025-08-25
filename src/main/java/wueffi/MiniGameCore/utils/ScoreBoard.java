@@ -143,7 +143,4 @@ public class ScoreBoard {
         animationIndex = (animationIndex + 1) % animations.size();
     }
 
-    public static int getAnimationIndex() {
-        return animationIndex;
-    }
 }

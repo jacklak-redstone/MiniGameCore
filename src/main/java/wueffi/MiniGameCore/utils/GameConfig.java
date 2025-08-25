@@ -13,7 +13,6 @@ import java.util.Set;
 public class GameConfig {
     public final boolean RespawnMode;
     public final int RespawnDelay;
-    private final FileConfiguration config;
     private final String gameName;
     private final int maxPlayers;
     private final int teams;
@@ -26,7 +25,7 @@ public class GameConfig {
     private final boolean allowPVP;
 
     public GameConfig(File configFile) {
-        this.config = YamlConfiguration.loadConfiguration(configFile);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
         this.gameName = config.getString("game.name", "default_game_name");
         this.maxPlayers = config.getInt("game.maxPlayers", 8);
@@ -85,10 +84,6 @@ public class GameConfig {
             }
         }
 
-    }
-
-    public String getGameName() {
-        return gameName;
     }
 
     public int getMaxPlayers() {

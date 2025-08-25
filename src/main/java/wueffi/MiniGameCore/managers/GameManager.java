@@ -158,7 +158,7 @@ public class GameManager implements Listener {
     }
 
     private static void runDelayed(Runnable task, int seconds) {
-        Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("MiniGameCore"), task, seconds * 20L);
+        Bukkit.getScheduler().runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("MiniGameCore")), task, seconds * 20L);
     }
 
     public void hostGame(String gameName, CommandSender sender) {

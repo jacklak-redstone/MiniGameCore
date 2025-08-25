@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Stats {
@@ -16,7 +17,7 @@ public class Stats {
     private static FileConfiguration statsConfig;
 
     public static void setup() {
-        statsFile = new File(Bukkit.getPluginManager().getPlugin("MiniGameCore").getDataFolder(), "Stats.yml");
+        statsFile = new File(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("MiniGameCore")).getDataFolder(), "Stats.yml");
 
         if (!statsFile.exists()) {
             try {

@@ -48,7 +48,7 @@ public class MiniGameCommand implements CommandExecutor {
     private static final Map<Player, Lobby> confirmations = new HashMap<>();
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         LobbyManager lobbyManager = LobbyManager.getInstance();
 
         if (!(sender instanceof Player player)) {
@@ -216,6 +216,7 @@ public class MiniGameCommand implements CommandExecutor {
                     player.sendMessage("§8[§6MiniGameCore§8] §cCould not ready!");
                     return true;
                 }
+                player.sendMessage("§8[§6MiniGameCore§8] §aYou are now ready!");
                 break;
 
             case "unready":
@@ -244,6 +245,7 @@ public class MiniGameCommand implements CommandExecutor {
                     player.sendMessage("§8[§6MiniGameCore§8] §cCould not unready!");
                     return true;
                 }
+                player.sendMessage("§8[§6MiniGameCore§8] §aYou not ready anymore!");
                 break;
 
             case "leave":
@@ -453,7 +455,7 @@ public class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 player.sendMessage("§8[§6MiniGameCore§8] §cBanning player: " + args[1]);
-                plugin.banPlayer(Bukkit.getPlayer(args[1]).getUniqueId());
+                plugin.banPlayer(Objects.requireNonNull(Bukkit.getPlayer(args[1])).getUniqueId());
                 if (args.length == 2) {
                     getLogger().info(player.getName() + " banned Player: " + args[1] + ".");
                 } else {
@@ -474,7 +476,7 @@ public class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 player.sendMessage("§8[§6MiniGameCore§8] §cUnbanning player: " + args[1]);
-                plugin.unbanPlayer(Bukkit.getPlayer(args[1]).getUniqueId());
+                plugin.unbanPlayer(Objects.requireNonNull(Bukkit.getPlayer(args[1])).getUniqueId());
                 getLogger().info(player.getName() + " unbanned Player: " + args[1] + ".");
                 player.sendMessage("§8[§6MiniGameCore§8] §cUnbanned player: " + args[1]);
                 break;

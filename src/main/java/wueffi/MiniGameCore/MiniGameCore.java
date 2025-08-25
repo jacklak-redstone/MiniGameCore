@@ -93,8 +93,4 @@ public class MiniGameCore extends JavaPlugin {
         bannedPlayers.remove(player);
         writeBannedPlayers();
     }
-
-    public MiniGameCore getPlugin() {
-        return plugin;
-    }
 }
