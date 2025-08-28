@@ -111,6 +111,9 @@ public class PartyCommand implements CommandExecutor {
                     player.sendMessage("§8[§6MiniGameCore§8]§a You were the owner, deleting party...");
                     if (party.removePlayer(player)) {
                         player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
+                        for (Player player1 : party.getPlayers()) {
+                            player1.sendMessage("§8[§6MiniGameCore§8]§a Owner §7 " + player.getName() + "§a has left the party!");
+                        }
                         PartyManager.removeParty(party.getPartyId());
                     } else {
                         player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
@@ -119,6 +122,9 @@ public class PartyCommand implements CommandExecutor {
                 }
                 if (party.removePlayer(player)) {
                     player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
+                    for (Player player1 : party.getPlayers()) {
+                        player1.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has left the party! (" + party.getPlayers().size() + " Members)");
+                    }
                 } else {
                     player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
                 }
@@ -147,6 +153,9 @@ public class PartyCommand implements CommandExecutor {
                     return true;
                 }
                 if (party.isInvited(player)) {
+                    for (Player player1 : party.getPlayers()) {
+                        player1.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has joined the party! (" + party.getPlayers().size() + " Members)");
+                    }
                     if (party.addPlayer(player)) {
                         player.sendMessage("§8[§6MiniGameCore§8]§a You joined the party: " + party.getPartyName());
                         return true;
@@ -212,6 +221,8 @@ public class PartyCommand implements CommandExecutor {
                 if (party.isInvited(player)) {
                     if (!party.denyInvite(player)) {
                         player.sendMessage("§8[§6MiniGameCore§8]§a Could not deny " + party.getPartyName() + ".");
+                    } else {
+                        target.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has denied your invitation.");
                     }
                     return true;
                 } else {
