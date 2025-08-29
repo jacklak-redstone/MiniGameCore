@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import wueffi.MiniGameCore.MiniGameCore;
+import wueffi.MiniGameCore.api.GameStartEvent;
 import wueffi.MiniGameCore.utils.*;
 
 import java.io.File;
@@ -44,6 +45,7 @@ public class GameManager implements Listener {
             frozenPlayers.add(player);
         }
         alivePlayers.put(lobby, new ArrayList<>(lobby.getPlayers()));
+        Bukkit.getServer().getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
         startCountdown(lobby);
     }
 
