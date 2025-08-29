@@ -12,10 +12,6 @@ public class MiniGameCoreAPI {
         return lobbyManager;
     }
 
-    public static Lobby getLobby(String lobbyId) {
-        return lobbyManager.getLobby(lobbyId);
-    }
-
     public static void winPlayer(Lobby lobby, Player player) {
         GameManager.winGame(lobby, player);
     }

@@ -401,8 +401,7 @@ public class GameManager implements Listener {
     }
 
     @EventHandler
-    public void catchContainerOpen(InventoryOpenEvent event)
-    {
+    public void catchContainerOpen(InventoryOpenEvent event) {
         if(!event.getInventory().getType().equals(InventoryType.PLAYER))
         {
             final Player player = (Player) event.getPlayer();
