@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 group = 'wueffi'
-version = '1.2.1'
+version = '1.2.2'
 
 repositories {
     mavenCentral()
@@ -21,21 +21,21 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    implementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
 }
 
 tasks {
     tasks.register('copyPlugin', Copy) {
         dependsOn(jar)
-        from 'build/libs/MiniGameCore-1.2.0.jar'
+        from 'build/libs/MiniGameCore-1.2.2.jar'
         into 'run/plugins'
     }
     runServer {
-        version.set("1.20")
+        version.set("1.21")
     }
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
