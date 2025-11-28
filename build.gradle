@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 group = 'wueffi'
-version = '1.2.2'
+version = '1.2.3'
 
 repositories {
     mavenCentral()
@@ -21,13 +21,13 @@ repositories {
 }
 
 dependencies {
-    implementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    implementation("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
 }
 
 tasks {
     tasks.register('copyPlugin', Copy) {
         dependsOn(jar)
-        from 'build/libs/MiniGameCore-1.2.2.jar'
+        from 'build/libs/MiniGameCore-1.2.3.jar'
         into 'run/plugins'
     }
     runServer {

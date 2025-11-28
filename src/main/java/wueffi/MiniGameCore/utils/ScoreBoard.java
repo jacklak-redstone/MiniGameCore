@@ -51,7 +51,7 @@ public class ScoreBoard {
         int maxPlayers = lobby.getMaxPlayers();
 
         obj.getScore("§r").setScore(players.size() + 6);
-        obj.getScore("§fPlayers: §a" + players.size() + "/" + maxPlayers + " | Ready: " + lobby.getReadyPlayers().size() + "/" + lobby.getPlayers().size()).setScore(players.size() + 5);
+        obj.getScore("§fPlayers: §a" + players.size() + "/" + maxPlayers + "§f | Ready: " + lobby.getReadyPlayers().size() + "/" + lobby.getPlayers().size()).setScore(players.size() + 5);
         obj.getScore("§f───────────────").setScore(players.size() + 4);
 
         if (players.isEmpty()) {
