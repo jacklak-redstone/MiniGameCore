@@ -10,6 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wueffi.MiniGameCore.MiniGameCore;
+import wueffi.MiniGameCore.utils.GameConfig;
 import wueffi.MiniGameCore.utils.Lobby;
 import wueffi.MiniGameCore.utils.ScoreBoard;
 import wueffi.MiniGameCore.utils.Stats;
@@ -24,7 +25,7 @@ public class ScoreBoardManager implements Listener {
 
     private static final Map<Player, String> playerGameStatus = new HashMap<>();
     private static final MiniGameCore plugin = JavaPlugin.getPlugin(MiniGameCore.class);
-    private static final Logger log = LoggerFactory.getLogger(ScoreBoardManager.class);
+    // private static final Logger log = LoggerFactory.getLogger(ScoreBoardManager.class);
 
     public static void setPlayerStatus(Player player, String status) {
         playerGameStatus.put(player, status);
@@ -57,7 +58,14 @@ public class ScoreBoardManager implements Listener {
                 break;
             case "GAME":
                 Lobby gameLobby = LobbyManager.getLobbyByPlayer(player);
-                if (gameLobby != null) ScoreBoard.createGameBoard(player, new ArrayList<>(alivePlayers.get(gameLobby)));
+                if (gameLobby != null) {
+                    GameConfig config = GameManager.loadGameConfigFromWorld(gameLobby.getWorldFolder());
+                    if (config.getTeams() > 0) {
+                        ScoreBoard.createTeamGameBoard(player);
+                    } else {
+                        ScoreBoard.createGameBoard(player, new ArrayList<>(alivePlayers.get(gameLobby)));
+                    }
+                }
                 break;
             default:
                 LobbyManager Lobbymanager = LobbyManager.getInstance();

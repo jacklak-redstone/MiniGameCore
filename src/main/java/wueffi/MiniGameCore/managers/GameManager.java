@@ -1,6 +1,5 @@
 package wueffi.MiniGameCore.managers;
 
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -24,10 +23,6 @@ import wueffi.MiniGameCore.utils.*;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.function.Supplier;
-
-import static org.bukkit.Bukkit.getLogger;
-import static wueffi.MiniGameCore.managers.LobbyManager.lobbies;
 
 public class GameManager implements Listener {
     static final Map<Lobby, List<Player>> alivePlayers = new HashMap<>();
@@ -49,18 +44,44 @@ public class GameManager implements Listener {
         startCountdown(lobby);
     }
 
-    public static void winGame(Lobby lobby, Player winner) {
-        for (Player player : lobby.getPlayers()) {
-            player.sendTitle("§6" + winner.getName(), "won the Game!", 10, 70, 20);
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-            Stats.win(lobby.getGameName(), winner);
-            if (!player.equals(winner)) {
-                Stats.lose(lobby.getGameName(), player);
+    public static void winGame(Lobby lobby, Player winnerPlayer, Team winnerTeam) {
+        GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
+        if (gameConfig.getTeams() > 0) {
+            for (Team team : lobby.getTeamList()) {
+                if (team == winnerTeam) {
+                    for (Player teamPlayer : team.getPlayers()) {
+                        Stats.win(lobby.getGameName(), teamPlayer);
+                        teamPlayer.sendTitle("§6Your team", "won the Game!", 10, 70, 20);
+                        teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                        runDelayed(() -> {
+                            PlayerHandler.PlayerReset(teamPlayer);
+                        }, 4);
+                    }
+                } else {
+                    for (Player teamPlayer : team.getPlayers()) {
+                        Stats.lose(lobby.getGameName(), teamPlayer);
+                        teamPlayer.sendTitle("§6The" + winnerTeam.getColor() + " Team", "won the Game!", 10, 70, 20);
+                        teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                        runDelayed(() -> {
+                            PlayerHandler.PlayerReset(teamPlayer);
+                        }, 4);
+                    }
+                }
             }
-            runDelayed(() -> {
-                PlayerHandler.PlayerReset(player);
-            }, 4);
+        } else {
+            for (Player player : lobby.getPlayers()) {
+                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                Stats.win(lobby.getGameName(), winnerPlayer);
+                if (!player.equals(winnerPlayer)) {
+                    Stats.lose(lobby.getGameName(), player);
+                }
+                runDelayed(() -> {
+                    PlayerHandler.PlayerReset(player);
+                }, 4);
+            }
         }
+
         runDelayed(() -> {
             LobbyHandler.LobbyReset(lobby);
         }, 4);
@@ -70,7 +91,6 @@ public class GameManager implements Listener {
         lobby.setLobbyState("COUNTDOWN");
         GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
         List<Player> players = new ArrayList<>(lobby.getPlayers());
-        List<List<Player>> teams = new ArrayList<>();
 
         Collections.shuffle(players); // Shuffly Shuff
 
@@ -78,25 +98,28 @@ public class GameManager implements Listener {
             int teamCount = gameConfig.getTeams();
 
             for (int i = 0; i < teamCount; i++) {
-                teams.add(new ArrayList<>());
+                if (!lobby.addTeam()) {
+                    plugin.getLogger().warning("Failed to add team to " + lobby.getLobbyId() + ". ");
+                }
             }
 
             for (int i = 0; i < players.size(); i++) {
-                teams.get(i % teamCount).add(players.get(i));
+                lobby.getTeam(i % teamCount).addPlayer(players.get(i));
+                lobby.getTeam(i % teamCount).updateAlive();
             }
 
             for (int teamIndex = 0; teamIndex < teamCount; teamIndex++) {
-                List<Player> teamPlayers = teams.get(teamIndex);
+                Set<Player> teamPlayers = lobby.getTeam(teamIndex).getPlayers();
                 List<GameConfig.TeamSpawnPoint> teamSpawns = new ArrayList<>(gameConfig.getTeamSpawnPoints().get(teamIndex).getSpawnPoints());
                 Collections.shuffle(teamSpawns);
 
                 for (Player teamPlayer : teamPlayers) {
                     if (teamSpawns.isEmpty()) {
-                        getLogger().warning("Not enough SpawnPoints for Team " + (teamIndex + 1) + " in Lobby " + lobby.getLobbyId());
+                        plugin.getLogger().warning("Not enough SpawnPoints for Team " + (teamIndex + 1) + " in Lobby " + lobby.getLobbyId());
                         continue;
                     }
 
-                    GameConfig.TeamSpawnPoint spawn = teamSpawns.remove(0);
+                    GameConfig.TeamSpawnPoint spawn = teamSpawns.removeFirst();
                     Location spawnLocation = new Location(teamPlayer.getWorld(), spawn.getX(), spawn.getY(), spawn.getZ());
                     teamPlayer.teleport(spawnLocation);
 
@@ -110,7 +133,7 @@ public class GameManager implements Listener {
             Collections.shuffle(spawnPoints);
 
             for (Player player : players) {
-                GameConfig.SpawnPoint spawn = spawnPoints.remove(0);
+                GameConfig.SpawnPoint spawn = spawnPoints.removeFirst();
                 Location spawnLocation = new Location(player.getWorld(), spawn.getX(), spawn.getY(), spawn.getZ());
                 player.teleport(spawnLocation);
 
@@ -151,7 +174,7 @@ public class GameManager implements Listener {
         }.runTaskTimer(plugin, 0L, 20L);
     }
 
-    private static GameConfig loadGameConfigFromWorld(File worldFolder) {
+    static GameConfig loadGameConfigFromWorld(File worldFolder) {
         File configFile = new File(worldFolder, "config.yml");
 
         if (configFile.exists()) {
@@ -252,7 +275,7 @@ public class GameManager implements Listener {
     }
 
     public Location getRespawnPoint(UUID playerId) {
-        return playerRespawnPoints.getOrDefault(playerId, Bukkit.getWorlds().get(0).getSpawnLocation());
+        return playerRespawnPoints.getOrDefault(playerId, Bukkit.getWorlds().getFirst().getSpawnLocation());
     }
 
     @EventHandler
@@ -293,52 +316,78 @@ public class GameManager implements Listener {
 
         if (lobby != null) {
             event.setCancelled(true);
+            player.setHealth(10);
 
             final World lobbyWorld = Bukkit.getWorld(lobby.getWorldFolder().getName());
             if (lobbyWorld != null) {
                 player.teleport(lobbyWorld.getSpawnLocation());
             } else {
-                getLogger().warning("Lobby world was null! " + player + "," + lobby);
-                player.teleport(alivePlayers.get(lobby).get(0));
+                plugin.getLogger().warning("Lobby world was null! " + player + "," + lobby);
+                player.teleport(alivePlayers.get(lobby).getFirst());
             }
             player.setGameMode(GameMode.SPECTATOR);
 
             GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
+            List<Player> alive = alivePlayers.get(lobby);
+            if (alive != null) {
+                alive.remove(player);
+            }
 
-            if (!config.getRespawnMode()) {
+            Team team = lobby.getTeamByPlayer(player);
+            team.decreaseAlive();
+
+            if (config.getTeams() > 0) {
                 player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
-                List<Player> alive = alivePlayers.get(lobby);
-                if (alive != null) {
-                    alive.remove(player);
 
-                    if (alive.size() == 1) {
-                        Player winner = alive.get(0);
-                        winGame(lobby, winner);
-                        alive.remove(lobby);
+                int aliveTeams = 0;
+                Team lastAliveTeam = null;
+                for (Team team2 : lobby.getTeamList()) {
+                    if (team2.getAlivePlayers() > 0) {
+                        aliveTeams++;
+                        lastAliveTeam = team2;
                     }
                 }
+
+                if (aliveTeams == 1 && lastAliveTeam != null) {
+                    winGame(lobby, null, lastAliveTeam);
+                }
             } else {
-                int delay = config.getRespawnDelay();
-                UUID uuid = player.getUniqueId();
-                Location respawnLocation = getRespawnPoint(uuid);
+                if (!config.getRespawnMode()) {
+                    player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
 
-                new BukkitRunnable() {
-                    int secondsLeft = delay;
-
-                    @Override
-                    public void run() {
-                        if (secondsLeft <= 0) {
-                            player.teleport(respawnLocation);
-                            player.setGameMode(GameMode.SURVIVAL);
-                            player.sendTitle("§aRespawned!", "", 10, 20, 10);
-                            this.cancel();
-                        } else {
-                            player.sendTitle("§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
-                            secondsLeft--;
-                        }
+                    if (alive != null && alive.size() == 1) {
+                        Player winner = alive.getFirst();
+                        winGame(lobby, winner, null);
                     }
-                }.runTaskTimer(plugin, 0, 20L);
+                } else {
+                    int delay = config.getRespawnDelay();
+                    UUID uuid = player.getUniqueId();
+                    Location respawnLocation = getRespawnPoint(uuid);
+
+                    new BukkitRunnable() {
+                        int secondsLeft = delay;
+
+                        @Override
+                        public void run() {
+                            if (secondsLeft <= 0) {
+                                player.teleport(respawnLocation);
+                                player.setGameMode(GameMode.SURVIVAL);
+                                player.sendTitle("§aRespawned!", "", 10, 20, 10);
+
+                                List<Player> alive = alivePlayers.get(lobby);
+                                if (alive != null && !alive.contains(player)) {
+                                    alive.add(player);
+                                }
+
+                                this.cancel();
+                            } else {
+                                player.sendTitle("§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
+                                secondsLeft--;
+                            }
+                        }
+                    }.runTaskTimer(plugin, 0, 20L);
+                }
             }
         }
     }

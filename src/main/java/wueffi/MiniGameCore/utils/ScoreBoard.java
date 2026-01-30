@@ -42,6 +42,46 @@ public class ScoreBoard {
         player.setScoreboard(board);
     }
 
+    public static void createTeamGameBoard(Player player) {
+        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        Objective obj = board.registerNewObjective("game", "dummy", TITLE);
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+
+        int aliveTeams = 0;
+        Team lastAliveTeam = null;
+        for (Team team : lobby.getTeamList()) {
+            if (team.getAlivePlayers() > 0) {
+                aliveTeams++;
+                lastAliveTeam = team;
+            }
+        }
+
+        int count = lobby.getTeamList().size();
+
+        obj.getScore("§fAlive Teams: §a" + count + "/" + lobby.getTeamList().size()).setScore(count + 4);
+        obj.getScore("§f───────────────").setScore(count + 3);
+        obj.getScore("§f§b").setScore(count + 2);
+
+        if (aliveTeams == 0) {
+            obj.getScore("§cNo teams alive!").setScore(count + 1);
+        } else {
+            for (int i = 0; i < count; i++) {
+                Team currentTeam = lobby.getTeam(i);
+                if (currentTeam.getAlivePlayers() == 0) {
+                    obj.getScore("§7- " + lobby.getTeam(i).getColor() + " Team (X)").setScore(count - i);
+                } else {
+                    obj.getScore("§7- " + currentTeam.getColorCode() + lobby.getTeam(i).getColor() + " Team §7(" + lobby.getTeam(i).getAlivePlayers() + ")").setScore(count - i);
+                }
+            }
+        }
+
+        obj.getScore("§r§f").setScore(2);
+        obj.getScore("§7─────────────────").setScore(1);
+        obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+    }
+
     public static void createLobbyBoard(Player player, Lobby lobby) {
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = board.registerNewObjective("lobby", "dummy", TITLE);

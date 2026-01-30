@@ -18,6 +18,7 @@ public class PlayerHandler implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         if (lobby != null) {
+            lobby.getTeamByPlayer(player).removePlayer(player);
             lobby.removePlayer(player);
             if (lobby.getPlayers().isEmpty()) {
                 LobbyHandler.LobbyReset(lobby);
@@ -25,7 +26,7 @@ public class PlayerHandler implements Listener {
         }
         PlayerSoftReset(player);
         player.setGameMode(GameMode.CREATIVE);
-        World mainWorld = Bukkit.getWorlds().get(0);
+        World mainWorld = Bukkit.getWorlds().getFirst();
         if (mainWorld != null) {
             Location spawn = mainWorld.getSpawnLocation();
             player.teleport(spawn);

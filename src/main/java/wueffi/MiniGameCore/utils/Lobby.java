@@ -6,9 +6,7 @@ import wueffi.MiniGameCore.managers.LobbyManager;
 import wueffi.MiniGameCore.managers.ScoreBoardManager;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Lobby {
     private final String lobbyId;
@@ -19,6 +17,8 @@ public class Lobby {
     private final File worldFolder;
     private final Set<Player> readyPlayers = new HashSet<>();
     private String lobbyState;
+    private final List<Team> teamList = new ArrayList<>();
+    private int teamCounter = 0;
 
     public Lobby(String lobbyId, String gameName, int maxPlayers, Player owner, File worldFolder, String LobbyState) {
         this.lobbyId = lobbyId;
@@ -81,6 +81,24 @@ public class Lobby {
         return result;
     }
 
+    public List<Team> getTeamList() {
+        return teamList;
+    }
+
+    public boolean addTeam() {
+        int id = teamCounter;
+        teamCounter = id + 1;
+
+        Team result = new Team(String.valueOf(id));
+        if (result == null) return false;
+
+        return teamList.add(result);
+    }
+
+    public Team getTeam(int i) {
+        return teamList.get(i);
+    }
+
     public Set<Player> getReadyPlayers() {
         return readyPlayers;
     }
@@ -107,5 +125,14 @@ public class Lobby {
 
     public File getWorldFolder() {
         return worldFolder;
+    }
+
+    public Team getTeamByPlayer(Player player) {
+        for (Team team : teamList) {
+            if (team.containsPlayer(player)) {
+                return team;
+            }
+        }
+        return null;
     }
 }
