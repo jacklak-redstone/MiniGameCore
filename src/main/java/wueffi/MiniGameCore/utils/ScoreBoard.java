@@ -69,10 +69,15 @@ public class ScoreBoard {
         } else {
             for (int i = 0; i < count; i++) {
                 Team currentTeam = lobby.getTeam(i);
+
+                String youString = "";
+                if (currentTeam.containsPlayer(player)) youString = "§8(YOU)§7";
+                else youString = "";
+
                 if (currentTeam.getAlivePlayers() == 0) {
-                    obj.getScore("§7- " + lobby.getTeam(i).getColor() + " Team (X)").setScore(count - i + 2);
+                    obj.getScore("§7- " + lobby.getTeam(i).getColor() + " Team (§4X§7) " + youString).setScore(count - i + 2);
                 } else {
-                    obj.getScore("§7- " + currentTeam.getColorCode() + lobby.getTeam(i).getColor() + " Team §7(" + lobby.getTeam(i).getAlivePlayers() + ")").setScore(count - i + 2);
+                    obj.getScore("§7- " + currentTeam.getColorCode() + lobby.getTeam(i).getColor() + " Team §7(§a" + lobby.getTeam(i).getAlivePlayers() + ") " + youString).setScore(count - i + 2);
                 }
             }
         }
