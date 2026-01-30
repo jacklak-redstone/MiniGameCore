@@ -19,7 +19,7 @@ public class Team {
         colors.put(1, "Blue");
         colors.put(2, "Yellow");
         colors.put(3, "Green");
-        colors.put(4, "Gray");
+        colors.put(4, "Cyan");
         colors.put(5, "Pink");
         colors.put(6, "Orange");
         colors.put(7, "White");
@@ -27,7 +27,7 @@ public class Team {
         colorCodes.put(1, "§1");
         colorCodes.put(2, "§e");
         colorCodes.put(3, "§2");
-        colorCodes.put(4, "§7");
+        colorCodes.put(4, "§b");
         colorCodes.put(5, "§d");
         colorCodes.put(6, "§6");
         colorCodes.put(7, "§f");
