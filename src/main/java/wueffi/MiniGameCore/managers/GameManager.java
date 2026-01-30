@@ -51,7 +51,7 @@ public class GameManager implements Listener {
                 if (team == winnerTeam) {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.win(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6Your team", "won the Game!", 10, 70, 20);
+                        teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         runDelayed(() -> {
                             PlayerHandler.PlayerReset(teamPlayer);
@@ -60,7 +60,7 @@ public class GameManager implements Listener {
                 } else {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.lose(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6The" + winnerTeam.getColor() + " Team", "won the Game!", 10, 70, 20);
+                        teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         runDelayed(() -> {
                             PlayerHandler.PlayerReset(teamPlayer);
@@ -96,6 +96,7 @@ public class GameManager implements Listener {
 
         if (gameConfig.getTeams() > 0) {
             int teamCount = gameConfig.getTeams();
+            if (lobby.getPlayers().size() < teamCount) teamCount = lobby.getPlayers().size();
 
             for (int i = 0; i < teamCount; i++) {
                 if (!lobby.addTeam()) {

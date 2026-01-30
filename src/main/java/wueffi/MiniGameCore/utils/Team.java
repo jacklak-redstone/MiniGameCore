@@ -71,10 +71,10 @@ public class Team {
     }
 
     public String getColor() {
-        return colors.get(teamId);
+        return colors.get(Integer.parseInt(teamId));
     }
 
     public String getColorCode() {
-        return colorCodes.get(teamId);
+        return colorCodes.get(Integer.parseInt(teamId));
     }
 }

@@ -52,6 +52,8 @@ public class MiniGameCore extends JavaPlugin {
 
         ScoreBoardManager.startAnimationLoop();
 
+        LobbyHandler.setPlugin(this);
+
         Bukkit.getPluginManager().registerEvents(new GameManager(this), this);
         getServer().getPluginManager().registerEvents(new PlayerHandler(), this);
     }
@@ -60,9 +62,7 @@ public class MiniGameCore extends JavaPlugin {
     public void onDisable() {
         for (Lobby lobby : LobbyManager.getInstance().getOpenLobbies()) {
             String lobbyid = lobby.getLobbyId();
-            getLogger().info("Lobby: " + lobbyid);
             for (Player player : LobbyManager.getInstance().getLobby(lobbyid).getPlayers()) {
-                getLogger().info("Player: " + lobbyid);
                 PlayerHandler.PlayerReset(player);
             }
             getLogger().info("Lobby disabling: " + lobbyid);
@@ -84,6 +84,7 @@ public class MiniGameCore extends JavaPlugin {
     public Boolean getKeepWorlds() {
         return keepWorlds;
     }
+
     private void writeBannedPlayers() {
         List<String> bannedPlayersString = new ArrayList<>();
         for (UUID player: bannedPlayers) {

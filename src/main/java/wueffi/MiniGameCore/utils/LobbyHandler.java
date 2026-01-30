@@ -59,7 +59,7 @@ public class LobbyHandler {
             } else {
                 plugin.getLogger().warning("Failed to delete world folder: " + name);
             }
-        }, 10);
+        }, 1);
     }
 
     private static boolean delete(File file) {
@@ -69,5 +69,9 @@ public class LobbyHandler {
             }
         }
         return file.delete();
+    }
+
+    public static void setPlugin(MiniGameCore plugin) {
+        LobbyHandler.plugin = plugin;
     }
 }

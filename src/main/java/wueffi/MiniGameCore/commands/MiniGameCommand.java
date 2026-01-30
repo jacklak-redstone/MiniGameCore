@@ -270,7 +270,7 @@ public class MiniGameCommand implements CommandExecutor {
                 }
 
                 for (Player p : confirmLobby.getPlayers()) {
-                    p.sendMessage("§8[§6MiniGameCore§8]" + confirmLobby.getOwner().getName() + " force-started the Game!");
+                    p.sendMessage("§8[§6MiniGameCore§8] §7" + confirmLobby.getOwner().getName() + " §8force-started the Game!");
                 }
                 player.sendMessage("§8[§6MiniGameCore§8] §aStarting game: " + confirmLobby.getLobbyId());
                 GameManager.startGame(confirmLobby);

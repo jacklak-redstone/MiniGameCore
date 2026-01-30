@@ -60,19 +60,19 @@ public class ScoreBoard {
 
         int count = lobby.getTeamList().size();
 
-        obj.getScore("§fAlive Teams: §a" + count + "/" + lobby.getTeamList().size()).setScore(count + 4);
-        obj.getScore("§f───────────────").setScore(count + 3);
-        obj.getScore("§f§b").setScore(count + 2);
+        obj.getScore("§fAlive Teams: §a" + aliveTeams + "/" + count).setScore(count + 5);
+        obj.getScore("§f───────────────").setScore(count + 4);
+        obj.getScore("§r§b").setScore(count + 3);
 
         if (aliveTeams == 0) {
-            obj.getScore("§cNo teams alive!").setScore(count + 1);
+            obj.getScore("§cNo teams alive!").setScore(count + 2);
         } else {
             for (int i = 0; i < count; i++) {
                 Team currentTeam = lobby.getTeam(i);
                 if (currentTeam.getAlivePlayers() == 0) {
-                    obj.getScore("§7- " + lobby.getTeam(i).getColor() + " Team (X)").setScore(count - i);
+                    obj.getScore("§7- " + lobby.getTeam(i).getColor() + " Team (X)").setScore(count - i + 2);
                 } else {
-                    obj.getScore("§7- " + currentTeam.getColorCode() + lobby.getTeam(i).getColor() + " Team §7(" + lobby.getTeam(i).getAlivePlayers() + ")").setScore(count - i);
+                    obj.getScore("§7- " + currentTeam.getColorCode() + lobby.getTeam(i).getColor() + " Team §7(" + lobby.getTeam(i).getAlivePlayers() + ")").setScore(count - i + 2);
                 }
             }
         }
@@ -80,6 +80,8 @@ public class ScoreBoard {
         obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
         obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+
+        player.setScoreboard(board);
     }
 
     public static void createLobbyBoard(Player player, Lobby lobby) {
