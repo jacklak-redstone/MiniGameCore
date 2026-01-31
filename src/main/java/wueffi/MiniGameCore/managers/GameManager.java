@@ -287,11 +287,17 @@ public class GameManager implements Listener {
         Player player = Bukkit.getPlayer(playerId);
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
-        List<Player> alivePlayersNew = alivePlayers.get(lobby);
-        alivePlayersNew.remove(player);
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
-        alivePlayers.remove(lobby);
-        alivePlayers.put(lobby, alivePlayersNew);
+        if (config.getTeams() > 0) {
+            lobby.getTeamByPlayer(player).decreaseAlive();
+        } else {
+            List<Player> alivePlayersNew = alivePlayers.get(lobby);
+            alivePlayersNew.remove(player);
+
+            alivePlayers.remove(lobby);
+            alivePlayers.put(lobby, alivePlayersNew);
+        }
     }
 
     public static void playerAlive(UUID playerId) {
