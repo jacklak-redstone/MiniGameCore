@@ -29,6 +29,7 @@ public class GameManager implements Listener {
     public static final Set<Player> frozenPlayers = new HashSet<>();
     static Map<UUID, Location> playerRespawnPoints = new HashMap<>();
     private static MiniGameCore plugin;
+    private static Map<Player, Player> lastHit = new HashMap<>();
 
     public GameManager(MiniGameCore plugin) {
         GameManager.plugin = plugin;
@@ -53,6 +54,7 @@ public class GameManager implements Listener {
                         Stats.win(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                        lastHit.remove(teamPlayer);
                         runDelayed(() -> {
                             PlayerHandler.PlayerReset(teamPlayer);
                         }, 4);
@@ -62,6 +64,7 @@ public class GameManager implements Listener {
                         Stats.lose(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                        lastHit.remove(teamPlayer);
                         runDelayed(() -> {
                             PlayerHandler.PlayerReset(teamPlayer);
                         }, 4);
@@ -73,6 +76,7 @@ public class GameManager implements Listener {
                 player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                 Stats.win(lobby.getGameName(), winnerPlayer);
+                lastHit.remove(player);
                 if (!player.equals(winnerPlayer)) {
                     Stats.lose(lobby.getGameName(), player);
                 }
@@ -275,8 +279,30 @@ public class GameManager implements Listener {
         }
     }
 
-    public Location getRespawnPoint(UUID playerId) {
+    public static Location getRespawnPoint(UUID playerId) {
         return playerRespawnPoints.getOrDefault(playerId, Bukkit.getWorlds().getFirst().getSpawnLocation());
+    }
+
+    public static void playerDeath(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+
+        List<Player> alivePlayersNew = alivePlayers.get(lobby);
+        alivePlayersNew.remove(player);
+
+        alivePlayers.remove(lobby);
+        alivePlayers.put(lobby, alivePlayersNew);
+    }
+
+    public static void playerAlive(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+
+        List<Player> alivePlayersNew = alivePlayers.get(lobby);
+        alivePlayersNew.add(player);
+
+        alivePlayers.remove(lobby);
+        alivePlayers.put(lobby, alivePlayersNew);
     }
 
     @EventHandler
@@ -329,65 +355,89 @@ public class GameManager implements Listener {
             player.setGameMode(GameMode.SPECTATOR);
 
             GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
-
-            List<Player> alive = alivePlayers.get(lobby);
-            if (alive != null) {
-                alive.remove(player);
-            }
-
-            Team team = lobby.getTeamByPlayer(player);
-            team.decreaseAlive();
+            Player killer = lastHit.get(player);
 
             if (config.getTeams() > 0) {
-                player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
-
-                int aliveTeams = 0;
-                Team lastAliveTeam = null;
-                for (Team team2 : lobby.getTeamList()) {
-                    if (team2.getAlivePlayers() > 0) {
-                        aliveTeams++;
-                        lastAliveTeam = team2;
-                    }
-                }
-
-                if (aliveTeams == 1 && lastAliveTeam != null) {
-                    winGame(lobby, null, lastAliveTeam);
-                }
-            } else {
-                if (!config.getRespawnMode()) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
-
-                    if (alive != null && alive.size() == 1) {
-                        Player winner = alive.getFirst();
-                        winGame(lobby, winner, null);
+                if (killer != null) {
+                    for (Player player2 : lobby.getPlayers()) {
+                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + " §7 was killed by " + lobby.getTeamByPlayer(killer).getColorCode() + killer.getName() + "§7.");
                     }
                 } else {
-                    int delay = config.getRespawnDelay();
-                    UUID uuid = player.getUniqueId();
-                    Location respawnLocation = getRespawnPoint(uuid);
+                    for (Player player2 : lobby.getPlayers()) {
+                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + " §7died.");
+                    }
+                }
+            } else {
+                if (killer != null) {
+                    for (Player player2 : lobby.getPlayers()) {
+                        player2.sendMessage("§a" + player.getName() + " §7 was killed by §4" + killer.getName() + "§7.");
+                    }
+                } else {
+                    for (Player player2 : lobby.getPlayers()) {
+                        player2.sendMessage("§a" + player.getName() + " §7died.");
+                    }
+                }
+            }
 
-                    new BukkitRunnable() {
-                        int secondsLeft = delay;
+            if (!config.getRespawnByAPI()) {
+                List<Player> alive = alivePlayers.get(lobby);
+                if (alive != null) {
+                    alive.remove(player);
+                }
 
-                        @Override
-                        public void run() {
-                            if (secondsLeft <= 0) {
-                                player.teleport(respawnLocation);
-                                player.setGameMode(GameMode.SURVIVAL);
-                                player.sendTitle("§aRespawned!", "", 10, 20, 10);
+                if (config.getTeams() > 0) {
+                    Team team = lobby.getTeamByPlayer(player);
+                    team.decreaseAlive();
+                    player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
 
-                                List<Player> alive = alivePlayers.get(lobby);
-                                if (alive != null && !alive.contains(player)) {
-                                    alive.add(player);
-                                }
-
-                                this.cancel();
-                            } else {
-                                player.sendTitle("§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
-                                secondsLeft--;
-                            }
+                    int aliveTeams = 0;
+                    Team lastAliveTeam = null;
+                    for (Team team2 : lobby.getTeamList()) {
+                        if (team2.getAlivePlayers() > 0) {
+                            aliveTeams++;
+                            lastAliveTeam = team2;
                         }
-                    }.runTaskTimer(plugin, 0, 20L);
+                    }
+
+                    if (aliveTeams == 1 && lastAliveTeam != null) {
+                        winGame(lobby, null, lastAliveTeam);
+                    }
+                } else {
+                    if (!config.getRespawnMode()) {
+                        player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
+
+                        if (alive != null && alive.size() == 1) {
+                            Player winner = alive.getFirst();
+                            winGame(lobby, winner, null);
+                        }
+                    } else {
+                        int delay = config.getRespawnDelay();
+                        UUID uuid = player.getUniqueId();
+                        Location respawnLocation = getRespawnPoint(uuid);
+
+                        new BukkitRunnable() {
+                            int secondsLeft = delay;
+
+                            @Override
+                            public void run() {
+                                if (secondsLeft <= 0) {
+                                    player.teleport(respawnLocation);
+                                    player.setGameMode(GameMode.SURVIVAL);
+                                    player.sendTitle("§aRespawned!", "", 10, 20, 10);
+
+                                    List<Player> alive = alivePlayers.get(lobby);
+                                    if (alive != null && !alive.contains(player)) {
+                                        alive.add(player);
+                                    }
+
+                                    this.cancel();
+                                } else {
+                                    player.sendTitle("§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
+                                    secondsLeft--;
+                                }
+                            }
+                        }.runTaskTimer(plugin, 0, 20L);
+                    }
                 }
             }
         }
@@ -440,13 +490,18 @@ public class GameManager implements Listener {
             if (Objects.equals(lobby.getLobbyState(), "WAITING")) {
                 damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
                 event.setCancelled(true);
+                return;
             }
 
             GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
             if (!config.getPVPMode() && Objects.equals(lobby.getLobbyState(), "GAME")) {
                 event.setCancelled(true);
                 damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
+                return;
             }
+
+            lastHit.remove((Player) damaged);
+            lastHit.put((Player) damaged, (Player) damager);
         }
     }
 

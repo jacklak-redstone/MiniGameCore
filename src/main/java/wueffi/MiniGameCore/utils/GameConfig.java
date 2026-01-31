@@ -23,6 +23,7 @@ public class GameConfig {
     private final Set<Material> allowedPlaceBlocks = new HashSet<>();
     private final boolean doDurability;
     private final boolean allowPVP;
+    private final boolean respawnByAPI;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -34,6 +35,7 @@ public class GameConfig {
         this.RespawnDelay = config.getInt("game.respawnDelay", 0);
         this.doDurability = config.getBoolean("game.doDurability", true);
         this.allowPVP = config.getBoolean("game.allowPVP", true);
+        this.respawnByAPI = config.getBoolean("game.respawnByAPI", false);
 
         if (config.contains("game.spawnPoints")) {
             for (String key : config.getConfigurationSection("game.spawnPoints").getKeys(false)) {
@@ -124,6 +126,10 @@ public class GameConfig {
 
     public boolean getPVPMode() {
         return allowPVP;
+    }
+
+    public boolean getRespawnByAPI() {
+        return respawnByAPI;
     }
 
     public Integer getRespawnDelay() {

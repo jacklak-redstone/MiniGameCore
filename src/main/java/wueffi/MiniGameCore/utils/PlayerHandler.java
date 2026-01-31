@@ -18,7 +18,8 @@ public class PlayerHandler implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         if (lobby != null) {
-            lobby.getTeamByPlayer(player).removePlayer(player);
+            Team team = lobby.getTeamByPlayer(player);
+            if (team != null) team.removePlayer(player);
             lobby.removePlayer(player);
             if (lobby.getPlayers().isEmpty()) {
                 LobbyHandler.LobbyReset(lobby);
