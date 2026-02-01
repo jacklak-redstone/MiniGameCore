@@ -389,7 +389,7 @@ public class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 GameManager.startGame(lobby);
-                player.sendMessage("§8[§6MiniGameCore§8] §aStarting game: " + lobby.getLobbyId());
+                if (lobby.getPlayers().size() > 1) player.sendMessage("§8[§6MiniGameCore§8] §aStarting game: " + lobby.getLobbyId());
                 break;
 
             case "spectate":

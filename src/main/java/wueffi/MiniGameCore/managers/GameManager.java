@@ -36,6 +36,12 @@ public class GameManager implements Listener {
     }
 
     public static void startGame(Lobby lobby) {
+        if (lobby.getPlayers().size() <= 1) {
+            for (Player player : lobby.getPlayers()) {
+                player.sendMessage("§8[§6MiniGameCore§8]§c Not enough players to start Game! (required: 2)");
+                return;
+            }
+        }
         for (Player player : lobby.getPlayers()) {
             player.sendMessage("§8[§6MiniGameCore§8]§a " + lobby.getGameName() + " is starting!");
             frozenPlayers.add(player);
@@ -200,7 +206,7 @@ public class GameManager implements Listener {
         String originalWorldName = gameName + "_world";
         String newWorldName = gameName + "_copy_" + System.currentTimeMillis();
 
-        File originalWorldFolder = new File("MiniGames", originalWorldName);
+        File originalWorldFolder = new File("plugins/MiniGameCore/MiniGames", originalWorldName);
         if (!originalWorldFolder.exists()) {
             plugin.getLogger().warning("Template world " + originalWorldName + " not found in" + originalWorldFolder.getAbsolutePath() + ".");
             return;

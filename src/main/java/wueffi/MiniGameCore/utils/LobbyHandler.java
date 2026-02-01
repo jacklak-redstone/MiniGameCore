@@ -3,7 +3,6 @@ package wueffi.MiniGameCore.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import wueffi.MiniGameCore.MiniGameCore;
-import wueffi.MiniGameCore.managers.GameManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,13 +52,11 @@ public class LobbyHandler {
             }
             return;
         }
-        GameManager.runDelayed(() -> {
-            if (delete(lobby.getWorldFolder())) {
-                plugin.getLogger().info("Deleted world: " + name);
-            } else {
-                plugin.getLogger().warning("Failed to delete world folder: " + name);
-            }
-        }, 1);
+        if (delete(lobby.getWorldFolder())) {
+            plugin.getLogger().info("Deleted world: " + name);
+        } else {
+            plugin.getLogger().warning("Failed to delete world folder: " + name);
+        }
     }
 
     private static boolean delete(File file) {
