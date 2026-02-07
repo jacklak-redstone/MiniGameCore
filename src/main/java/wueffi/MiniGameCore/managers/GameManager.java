@@ -24,6 +24,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.*;
 
+import static wueffi.MiniGameCore.utils.PlayerHandler.PlayerSoftReset;
+
 public class GameManager implements Listener {
     static final Map<Lobby, List<Player>> alivePlayers = new HashMap<>();
     public static final Set<Player> frozenPlayers = new HashSet<>();
@@ -45,6 +47,7 @@ public class GameManager implements Listener {
         for (Player player : lobby.getPlayers()) {
             player.sendMessage("§8[§6MiniGameCore§8]§a " + lobby.getGameName() + " is starting!");
             frozenPlayers.add(player);
+            PlayerSoftReset(player);
         }
         alivePlayers.put(lobby, new ArrayList<>(lobby.getPlayers()));
         Bukkit.getServer().getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
@@ -106,7 +109,7 @@ public class GameManager implements Listener {
 
         if (gameConfig.getTeams() > 0) {
             int teamCount = gameConfig.getTeams();
-            if (lobby.getPlayers().size() < teamCount) teamCount = lobby.getPlayers().size();
+            // if (lobby.getPlayers().size() < teamCount) teamCount = lobby.getPlayers().size();
 
             for (int i = 0; i < teamCount; i++) {
                 if (!lobby.addTeam()) {
@@ -171,9 +174,6 @@ public class GameManager implements Listener {
                         player.sendTitle("§aGame Started!", "§cTeaming / Cheating is bannable!");
                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 5.0f);
                         ScoreBoardManager.setPlayerStatus(player, "GAME");
-                        player.getInventory().clear();
-                        player.getInventory().setArmorContents(null);
-                        player.setItemOnCursor(null);
                         for (Material material : gameConfig.getStartInventory()) {
                             player.getInventory().addItem(new ItemStack(material));
                         }
@@ -235,7 +235,7 @@ public class GameManager implements Listener {
         } else {
             Location spawnLocation = newWorld.getSpawnLocation();
             player.teleport(spawnLocation);
-            PlayerHandler.PlayerSoftReset(player);
+            PlayerSoftReset(player);
             player.setGameMode(GameMode.SURVIVAL);
         }
 
@@ -372,7 +372,7 @@ public class GameManager implements Listener {
             if (config.getTeams() > 0) {
                 if (killer != null) {
                     for (Player player2 : lobby.getPlayers()) {
-                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + " §7 was killed by " + lobby.getTeamByPlayer(killer).getColorCode() + killer.getName() + "§7.");
+                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + "§7 was killed by " + lobby.getTeamByPlayer(killer).getColorCode() + killer.getName() + "§7.");
                     }
                 } else {
                     for (Player player2 : lobby.getPlayers()) {
@@ -382,7 +382,7 @@ public class GameManager implements Listener {
             } else {
                 if (killer != null) {
                     for (Player player2 : lobby.getPlayers()) {
-                        player2.sendMessage("§a" + player.getName() + " §7 was killed by §4" + killer.getName() + "§7.");
+                        player2.sendMessage("§a" + player.getName() + "§7 was killed by §4" + killer.getName() + "§7.");
                     }
                 } else {
                     for (Player player2 : lobby.getPlayers()) {

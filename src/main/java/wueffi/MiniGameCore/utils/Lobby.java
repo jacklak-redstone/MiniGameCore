@@ -96,7 +96,8 @@ public class Lobby {
     }
 
     public Team getTeam(int i) {
-        return teamList.get(i);
+        if (teamList.size() >= i) return teamList.get(i);
+        else return null;
     }
 
     public Set<Player> getReadyPlayers() {

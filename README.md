@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-1.3.2-blue)
+![Static Badge](https://img.shields.io/badge/Version-1.3.3-blue)
 # MiniGameCore
 
 **MiniGameCore** is a central plugin for managing minigame lobbies in Minecraft Paper Servers. It handles hosting, joining, starting, and stopping games – with animated scoreboards, statistics, and multiverse support.

@@ -13,12 +13,16 @@ import wueffi.MiniGameCore.utils.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class MiniGameCore extends JavaPlugin {
     private final MiniGameCore plugin = this;
     private List<String> availableGames;
     private List<UUID> bannedPlayers;
     private Boolean keepWorlds;
+    private LobbyManager lobbyManager;
 
     @Override
     public void onEnable() {
@@ -53,20 +57,21 @@ public class MiniGameCore extends JavaPlugin {
         ScoreBoardManager.startAnimationLoop();
 
         LobbyHandler.setPlugin(this);
+        lobbyManager = LobbyManager.getInstance();
 
         Bukkit.getPluginManager().registerEvents(new GameManager(this), this);
-        getServer().getPluginManager().registerEvents(new PlayerHandler(), this);
+        getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
     }
 
     @Override
     public void onDisable() {
-        for (Lobby lobby : LobbyManager.getInstance().getOpenLobbies()) {
+        for (Lobby lobby : Stream.concat(lobbyManager.getOpenLobbies().stream(), lobbyManager.getClosedLobbies().stream()).toList()) {
             String lobbyid = lobby.getLobbyId();
-            for (Player player : LobbyManager.getInstance().getLobby(lobbyid).getPlayers()) {
+            for (Player player : lobby.getPlayers()) {
                 PlayerHandler.PlayerReset(player);
             }
             getLogger().info("Lobby disabling: " + lobbyid);
-            LobbyHandler.LobbyReset(LobbyManager.getInstance().getLobby(lobbyid));
+            LobbyHandler.LobbyReset(lobby);
             getLogger().info("Shut down Lobby: " + lobbyid);
         }
         GameManager.frozenPlayers.clear();

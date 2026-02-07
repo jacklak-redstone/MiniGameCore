@@ -44,6 +44,7 @@ public class MiniGameCommand implements CommandExecutor {
         commands_permissions.put("stop", "mgcore.admin");
         commands_permissions.put("ban", "mgcore.admin");
         commands_permissions.put("unban", "mgcore.admin");
+        commands_permissions.put("version", "mgcore.use");
         return commands_permissions;
     }
 
@@ -443,7 +444,7 @@ public class MiniGameCommand implements CommandExecutor {
                 world = Bukkit.getWorld("world");
                 assert world != null;
                 player.teleport(world.getSpawnLocation());
-                player.setGameMode(GameMode.CREATIVE);
+                player.setGameMode(Bukkit.getDefaultGameMode());
                 break;
 
             case "stats":
@@ -564,6 +565,14 @@ public class MiniGameCommand implements CommandExecutor {
                 plugin.unbanPlayer(Objects.requireNonNull(Bukkit.getPlayer(args[1])).getUniqueId());
                 getLogger().info(player.getName() + " unbanned Player: " + args[1] + ".");
                 player.sendMessage("§8[§6MiniGameCore§8] §cUnbanned player: " + args[1]);
+                break;
+
+            case "version":
+                if (!player.hasPermission("mgcore.use")) {
+                    player.sendMessage("§cYou don't have permissions to use this Command!");
+                    return true;
+                }
+                player.sendMessage("§8[§6MiniGameCore§8] §aVersion: " + plugin.getDescription().getVersion());
                 break;
 
             default:
