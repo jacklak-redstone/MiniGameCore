@@ -30,6 +30,7 @@
 | `/mg stop <lobby-id>`             | Stop a specific game                                 | `mgcore.admin`        |
 | `/mg stopall`                     | Stop all active games                                | `mgcore.admin`        |
 | `/mg ban <player>`                | Ban the player from using most MiniGameCore commands | `mgcore.admin`        |
+| `/mg version`                     | Displays the version of MiniGameCore you are using   | `mgcore.use` (default)|
 | `/party create <name>`            | Creates a new party                                  | `mgcore.party.create` |
 | `/party join <player>`            | Join the player's Party                              | `mgcore.party.join`   |
 | `/party leave`                    | Leave your party                                     | `mgcore.party.join`   |
@@ -58,24 +59,23 @@ keep-worlds: false
 Note: if `keep-worlds: true`, the plugin is going to move them to `./plugins/MiniGameCore/ArchivedWorlds` instead of deleting them.
 
 ### Loading Game-Worlds & Configuring them
-The Folder for Gameworlds is `./plugins/MiniGameCore/MiniGames`. Every Game World should be named like this: `<Game name>_world`. The world configs are named `config.yml` and should be located in the Game's world folder.
+The Folder for Gameworlds and configs is `./MiniGameCore`. Every Game World should be named like this: `<Game name>_world`. The world configs are named `config.yml` and should be located in the Game's world folder.
 
 All available options: 
 
-| Field                  | Description                                                       | Required / Default    |
-|------------------------|-------------------------------------------------------------------|-----------------------|
-| `name`                 | Display name of the game, e.g. in the scoreboard or at `/mg host` | ✅ Yes                 |
-| `maxPlayers`           | Maximum number of players for this game instance                  | ✅ Yes                 |
-| `teams`                | Maximum number of teams (0 for no teams, 2-8 teams possible)      | ❌ No (default: 0)     |
-| `spawnPoints`          | Default spawn points for players without a team                   | ✅ Depends             |
-| `teamSpawnPoints`      | Spawn points per team (e.g. `0: [...]`, `1: [...]`)               | ✅ Depends             |
-| `inventory`            | Starting items at game start (e.g. `["WOODEN_SHOVEL"]`)           | ❌ No                  |
-| `allowed_break_blocks` | Which blocks can be broken (e.g. `["SNOW_BLOCK"]`)                | ❌ No                  |
+| Field                  | Description                                                       | Required / Default |
+|------------------------|-------------------------------------------------------------------|--------------------|
+| `name`                 | Display name of the game, e.g. in the scoreboard or at `/mg host` | ✅ Yes |
+| `maxPlayers`           | Maximum number of players for this game instance                  | ✅ Yes |
+| `teams`                | Maximum number of teams (0 for no teams, 2-8 teams possible)      | ❌ No (default: 0) |
+| `spawnPoints`          | Default spawn points for players without a team                   | ✅ Depends |
+| `teamSpawnPoints`      | Spawn points per team (e.g. `0: [...]`, `1: [...]`)               | ✅ Depends |
+| `inventory`            | Starting items at game start (e.g. `["WOODEN_SHOVEL"]`)           | ❌ No |
+| `allowed_break_blocks` | Which blocks can be broken (e.g. `["SNOW_BLOCK"]`)                | ❌ No |
 | `respawnMode`          | Control of respawn behavior: `"true"` or `"false"`                | ❌ No (default: false) |
-| `respawnDelay`         | Seconds delay until respawn (if enabled)                          | ❌ No (default: 0)     |
-| `doDurability`         | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true)  |
-| `allowPVP`             | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true)  |
-| `respawnByAPI`         | Let the API handle respawning                                     | ❌ No (default: false  |
+| `respawnDelay`         | Seconds delay until respawn (if enabled)                          | ❌ No (default: 0) |
+| `doDurability`         | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true) |
+| `allowPVP`             | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true) |
 
 Example config for an 8 player Spleef-Game:
 ```
