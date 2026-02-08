@@ -136,14 +136,14 @@ dependencies {
 
 In your project, import classes/events/methods using `import wueffi.MiniGameCore.x`
 
-Available Events are:
+**Available Events are:** \
 `GameStartEvent` with `event.getGameName()` and `event.getLobby` 
 
-Helpful MGC Classes are:
+**Helpful MGC Classes are:** \
 [Lobby](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Lobby.java) \
 [Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java) 
 
-Available API methods are: 
+**Available API methods are:** \
 `getLobbyManager()` -> returns MiniGameCores LobbyManager instance \
 `winPlayer(Lobby lobby, Player player)` -> let a singular Player win a game \
 `winTeam(Lobby lobby, Team team)` -> let a Team win a game \
