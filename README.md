@@ -124,3 +124,29 @@ game:
   doDurability: false
   allowPVP: false
 ```
+
+## ‼️ API
+
+You can use the MiniGameCoreAPI by importing the Project using Gradle! Past this in your `build.gradle`:
+```
+dependencies {
+    implementation 'com.github.Wueffi:MiniGameCore:master-SNAPSHOT'
+}
+```
+
+In your project, import classes/events/methods using `import wueffi.MiniGameCore.x`
+
+Available Events are:
+`GameStartEvent` with `event.getGameName()` and `event.getLobby`
+
+Helpful MGC Classes are:
+[Lobby](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Lobby.java)
+[Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java)
+
+Available API methods are: 
+`getLobbyManager()` -> returns MiniGameCores LobbyManager instance
+`winPlayer(Lobby lobby, Player player)` -> let a singular Player win a game
+`winTeam(Lobby lobby, Team team)` -> let a Team win a game
+`playerDeath(UUID playerid)` -> notify MiniGameCore of a Players Death
+`playerAlive(UUID playerid)` -> notify MiniGameCore of a Players Respawn
+`getRespawnLocation(UUID playerid)` -> returns the Respawnlocation of a player
