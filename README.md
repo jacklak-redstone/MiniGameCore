@@ -129,6 +129,10 @@ game:
 
 You can use the MiniGameCoreAPI by importing the Project using Gradle! Past this in your `build.gradle`:
 ```
+repositories {
+    maven { url "https://jitpack.io"  }
+}
+
 dependencies {
     implementation 'com.github.Wueffi:MiniGameCore:master-SNAPSHOT'
 }
