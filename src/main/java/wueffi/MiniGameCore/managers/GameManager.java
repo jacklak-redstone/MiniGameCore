@@ -187,7 +187,7 @@ public class GameManager implements Listener {
         }.runTaskTimer(plugin, 0L, 20L);
     }
 
-    static GameConfig loadGameConfigFromWorld(File worldFolder) {
+    public static GameConfig loadGameConfigFromWorld(File worldFolder) {
         File configFile = new File(worldFolder, "config.yml");
 
         if (configFile.exists()) {

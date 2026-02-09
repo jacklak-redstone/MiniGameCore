@@ -24,8 +24,15 @@ public class PlayerHandler implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         if (lobby != null) {
-            Team team = lobby.getTeamByPlayer(player);
-            if (team != null) team.removePlayer(player);
+            GameConfig config = GameManager.loadGameConfigFromWorld(lobby.getWorldFolder());
+            if (config.getTeams() > 0) {
+                Team team = lobby.getTeamByPlayer(player);
+                if (team != null) {
+                    team.removePlayer(player);
+                    team.decreaseAlive();
+                }
+            }
+
             if (lobby.getOwner() == player) {
                 lobby.removePlayer(player);
                 for (Player player1 : lobby.getPlayers()) {
@@ -33,6 +40,7 @@ public class PlayerHandler implements Listener {
                 }
                 LobbyHandler.LobbyReset(lobby);
             } else {
+                GameManager.playerDeath(player.getUniqueId());
                 lobby.removePlayer(player);
                 if (lobby.getPlayers().isEmpty()) {
                     LobbyHandler.LobbyReset(lobby);
