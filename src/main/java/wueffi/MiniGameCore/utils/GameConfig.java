@@ -1,6 +1,7 @@
 package wueffi.MiniGameCore.utils;
 
 import org.bukkit.Material;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,6 +22,7 @@ public class GameConfig {
     private final List<Material> startInventory = new ArrayList<>();
     private final Set<Material> allowedBreakBlocks = new HashSet<>();
     private final Set<Material> allowedPlaceBlocks = new HashSet<>();
+    private final Set<DamageCause> blockedDamageCauses = new HashSet<>();
     private final boolean doDurability;
     private final boolean allowPVP;
     private final boolean respawnByAPI;
@@ -86,6 +88,14 @@ public class GameConfig {
             }
         }
 
+        if (config.contains("game.blocked_damage_causes")) {
+            for (String damCause : config.getStringList("game.blocked_damage_causes")) {
+                try {
+                    DamageCause damageCause = DamageCause.valueOf(damCause.toUpperCase());
+                    blockedDamageCauses.add(damageCause);
+                } catch (IllegalArgumentException ignored) {} // _ works in 22+, if we ever migrate to Java 22+, change this to _
+            }
+        }
     }
 
     public int getMaxPlayers() {
@@ -134,6 +144,10 @@ public class GameConfig {
 
     public Integer getRespawnDelay() {
         return RespawnDelay;
+    }
+
+    public Set<DamageCause> getBlockedDamageCauses() {
+        return blockedDamageCauses;
     }
 
     public static class SpawnPoint {
