@@ -76,6 +76,7 @@ All available options:
 | `respawnDelay`         | Seconds delay until respawn (if enabled)                          | ❌ No (default: 0) |
 | `doDurability`         | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true) |
 | `allowPVP`             | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true) |
+| `blocked_damage_causes`| Stop these damage causes from happening                           | ❌ No
 
 Example config for an 8 player Spleef-Game:
 ```
