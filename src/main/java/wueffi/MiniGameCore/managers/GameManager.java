@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import wueffi.MiniGameCore.MiniGameCore;
+import wueffi.MiniGameCore.api.GameOverEvent;
 import wueffi.MiniGameCore.api.GameStartEvent;
 import wueffi.MiniGameCore.utils.*;
 
@@ -52,23 +53,22 @@ public class GameManager implements Listener {
             PlayerSoftReset(player);
         }
         alivePlayers.put(lobby, new ArrayList<>(lobby.getPlayers()));
-        Bukkit.getServer().getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
+        Bukkit.getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
         startCountdown(lobby);
     }
 
-    public static void winGame(Lobby lobby, Player winnerPlayer, Team winnerTeam) {
-        GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
-        if (gameConfig.getTeams() > 0) {
+    public static void winGame(Lobby lobby, Winner winner) {
+        if (winner instanceof Winner.TeamWinner teamWinner) {
+            Team winnerTeam = teamWinner.getTeam();
+
             for (Team team : lobby.getTeamList()) {
-                if (team == winnerTeam) {
+                if (team.equals(winnerTeam)) {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.win(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         lastHit.remove(teamPlayer);
-                        runDelayed(() -> {
-                            PlayerHandler.PlayerReset(teamPlayer);
-                        }, 4);
+                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 } else {
                     for (Player teamPlayer : team.getPlayers()) {
@@ -76,30 +76,30 @@ public class GameManager implements Listener {
                         teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         lastHit.remove(teamPlayer);
-                        runDelayed(() -> {
-                            PlayerHandler.PlayerReset(teamPlayer);
-                        }, 4);
+                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 }
             }
-        } else {
+        } else if (winner instanceof Winner.PlayerWinner playerWinner) {
+            Player winnerPlayer = playerWinner.getPlayer();
+
             for (Player player : lobby.getPlayers()) {
-                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                Stats.win(lobby.getGameName(), winnerPlayer);
-                lastHit.remove(player);
-                if (!player.equals(winnerPlayer)) {
+                if (player.equals(winnerPlayer)) {
+                    Stats.win(lobby.getGameName(), player);
+                } else {
                     Stats.lose(lobby.getGameName(), player);
                 }
-                runDelayed(() -> {
-                    PlayerHandler.PlayerReset(player);
-                }, 4);
+
+                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                lastHit.remove(player);
+                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
             }
         }
 
-        runDelayed(() -> {
-            LobbyHandler.LobbyReset(lobby);
-        }, 4);
+        runDelayed(() -> LobbyHandler.LobbyReset(lobby), 4);
+
+        Bukkit.getPluginManager().callEvent(new GameOverEvent(lobby, winner));
     }
 
     private static void startCountdown(Lobby lobby) {
@@ -414,7 +414,7 @@ public class GameManager implements Listener {
                     }
 
                     if (aliveTeams == 1 && lastAliveTeam != null) {
-                        winGame(lobby, null, lastAliveTeam);
+                        winGame(lobby, new Winner.TeamWinner(lastAliveTeam));
                     }
                 } else {
                     if (!config.getRespawnMode()) {
@@ -422,7 +422,7 @@ public class GameManager implements Listener {
 
                         if (alive != null && alive.size() == 1) {
                             Player winner = alive.getFirst();
-                            winGame(lobby, winner, null);
+                            winGame(lobby, new Winner.PlayerWinner(winner));
                         }
                     } else {
                         int delay = config.getRespawnDelay();
