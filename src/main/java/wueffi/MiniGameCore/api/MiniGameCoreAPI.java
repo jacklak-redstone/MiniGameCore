@@ -18,11 +18,15 @@ public class MiniGameCoreAPI {
     }
 
     public static void winPlayer(Lobby lobby, Player player) {
-        GameManager.winGame(lobby, new Winner.PlayerWinner(player));
+        GameManager.endGame(lobby, new Winner.PlayerWinner(player));
     }
 
     public static void winTeam(Lobby lobby, Team team) {
-        GameManager.winGame(lobby, new Winner.TeamWinner(team));
+        GameManager.endGame(lobby, new Winner.TeamWinner(team));
+    }
+
+    public static void tieGame(Lobby lobby) {
+        GameManager.endGame(lobby, null);
     }
 
     public static void playerDeath(UUID playerid) {

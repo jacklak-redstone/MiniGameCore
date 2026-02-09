@@ -57,7 +57,15 @@ public class GameManager implements Listener {
         startCountdown(lobby);
     }
 
-    public static void winGame(Lobby lobby, Winner winner) {
+    public static void endGame(Lobby lobby, Winner winner) {
+        if (winner == null) {
+            for (Player player : lobby.getPlayers()) {
+                player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
+                lastHit.remove(player);
+                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+            }
+        }
+
         if (winner instanceof Winner.TeamWinner teamWinner) {
             Team winnerTeam = teamWinner.getTeam();
 
@@ -414,7 +422,7 @@ public class GameManager implements Listener {
                     }
 
                     if (aliveTeams == 1 && lastAliveTeam != null) {
-                        winGame(lobby, new Winner.TeamWinner(lastAliveTeam));
+                        endGame(lobby, new Winner.TeamWinner(lastAliveTeam));
                     }
                 } else {
                     if (!config.getRespawnMode()) {
@@ -422,7 +430,7 @@ public class GameManager implements Listener {
 
                         if (alive != null && alive.size() == 1) {
                             Player winner = alive.getFirst();
-                            winGame(lobby, new Winner.PlayerWinner(winner));
+                            endGame(lobby, new Winner.PlayerWinner(winner));
                         }
                     } else {
                         int delay = config.getRespawnDelay();
