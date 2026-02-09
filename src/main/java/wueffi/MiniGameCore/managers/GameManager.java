@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -531,6 +533,21 @@ public class GameManager implements Listener {
                 player.sendMessage("§8[§6MiniGameCore§8]§c You can't open Containers yet!");
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+
+        if (lobby == null) return;
+        DamageCause damageCause = event.getCause();
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+
+        if (config.getBlockedDamageCauses().contains(damageCause)) {
+            event.setCancelled(true);
         }
     }
 }
