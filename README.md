@@ -77,6 +77,7 @@ All available options:
 | `doDurability`         | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true) |
 | `allowPVP`             | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true) |
 | `blocked_damage_causes`| Stop these damage causes from happening                           | ❌ No |
+| `timeLimit`           | Stops a game after X seconds have passed                          | ❌ No (default: 600) |
 
 Example config for an 8 player Spleef-Game:
 ```
@@ -128,7 +129,7 @@ game:
 
 ## ‼️ API
 
-You can use the MiniGameCoreAPI by importing the Project using Gradle! Past this in your `build.gradle`:
+You can use the MiniGameCoreAPI by importing the Project using Gradle! Paste this in your `build.gradle`:
 ```
 repositories {
     maven { url "https://jitpack.io"  }
@@ -142,11 +143,13 @@ dependencies {
 In your project, import classes/events/methods using `import wueffi.MiniGameCore.x`
 
 **Available Events are:** \
-`GameStartEvent` with `event.getGameName()` and `event.getLobby` 
+`GameStartEvent` with `event.getGameName()` and `event.getLobby()` \
+`GameOverEvent` with `event.getLobby()`
 
-**Helpful MGC Classes are:** \
+**Helpful MGC Classes/Interfaces are:** \
 [Lobby](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Lobby.java) \
-[Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java) 
+[Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java) \
+[Winner](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Winner.java)
 
 **Available API methods are:** \
 `getLobbyManager()` -> returns MiniGameCores LobbyManager instance \
@@ -154,4 +157,4 @@ In your project, import classes/events/methods using `import wueffi.MiniGameCore
 `winTeam(Lobby lobby, Team team)` -> let a Team win a game \
 `playerDeath(UUID playerid)` -> notify MiniGameCore of a Players Death \
 `playerAlive(UUID playerid)` -> notify MiniGameCore of a Players Respawn \
-`getRespawnLocation(UUID playerid)` -> returns the Respawnlocation of a player 
+`getRespawnLocation(UUID playerid)` -> returns the Respawnlocation of a player

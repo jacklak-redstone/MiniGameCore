@@ -26,6 +26,7 @@ public class GameConfig {
     private final boolean doDurability;
     private final boolean allowPVP;
     private final boolean respawnByAPI;
+    private final int timeLimit;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -38,6 +39,7 @@ public class GameConfig {
         this.doDurability = config.getBoolean("game.doDurability", true);
         this.allowPVP = config.getBoolean("game.allowPVP", true);
         this.respawnByAPI = config.getBoolean("game.respawnByAPI", false);
+        this.timeLimit = config.getInt("game.timeLimit", 600); //10 Minutes
 
         if (config.contains("game.spawnPoints")) {
             for (String key : config.getConfigurationSection("game.spawnPoints").getKeys(false)) {
@@ -146,52 +148,18 @@ public class GameConfig {
         return RespawnDelay;
     }
 
+    public Integer getTimeLimit() {
+        return timeLimit;
+    }
+
     public Set<DamageCause> getBlockedDamageCauses() {
         return blockedDamageCauses;
     }
 
-    public static class SpawnPoint {
-        private final int x, y, z;
-
-        public SpawnPoint(int x, int y, int z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public int getZ() {
-            return z;
-        }
+    public record SpawnPoint(int x, int y, int z) {
     }
 
-    public static class TeamSpawnPoint {
-        private final int x, y, z;
-
-        public TeamSpawnPoint(int x, int y, int z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public int getZ() {
-            return z;
-        }
+    public record TeamSpawnPoint(int x, int y, int z) {
     }
 
     public static class TeamSpawnPoints {

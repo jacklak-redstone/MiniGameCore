@@ -6,7 +6,9 @@ import wueffi.MiniGameCore.managers.GameManager;
 import wueffi.MiniGameCore.managers.LobbyManager;
 import wueffi.MiniGameCore.utils.Lobby;
 import wueffi.MiniGameCore.utils.Team;
+import wueffi.MiniGameCore.utils.Winner;
 
+import java.util.List;
 import java.util.UUID;
 
 public class MiniGameCoreAPI {
@@ -17,11 +19,11 @@ public class MiniGameCoreAPI {
     }
 
     public static void winPlayer(Lobby lobby, Player player) {
-        GameManager.winGame(lobby, player, null);
+        GameManager.endGame(lobby, new Winner.PlayerWinner(player));
     }
 
     public static void winTeam(Lobby lobby, Team team) {
-        GameManager.winGame(lobby, null, team);
+        GameManager.endGame(lobby, new Winner.TeamWinner(team));
     }
 
     public static void playerDeath(UUID playerid) {

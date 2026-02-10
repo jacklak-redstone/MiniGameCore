@@ -74,6 +74,7 @@ public class ScoreBoardManager implements Listener {
                         Stats.getTotalPlayed(player),
                         Stats.getTotalWins(player),
                         Stats.getTotalLosses(player),
+                        Stats.getTotalTies(player),
                         Lobbymanager.getOpenLobbies(),
                         Lobbymanager.getClosedLobbies()
                 );

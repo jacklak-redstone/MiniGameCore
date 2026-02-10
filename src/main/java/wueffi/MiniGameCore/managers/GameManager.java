@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import wueffi.MiniGameCore.MiniGameCore;
+import wueffi.MiniGameCore.api.GameOverEvent;
 import wueffi.MiniGameCore.api.GameStartEvent;
 import wueffi.MiniGameCore.utils.*;
 
@@ -52,66 +53,71 @@ public class GameManager implements Listener {
             PlayerSoftReset(player);
         }
         alivePlayers.put(lobby, new ArrayList<>(lobby.getPlayers()));
-        Bukkit.getServer().getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
+        Bukkit.getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
         startCountdown(lobby);
     }
 
-    public static void winGame(Lobby lobby, Player winnerPlayer, Team winnerTeam) {
-        GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
-        if (gameConfig.getTeams() > 0) {
+    public static void endGame(Lobby lobby, Winner winner) {
+        if (winner instanceof Winner.TieWinner(List<Player> playerList)) {
+            for (Player player : lobby.getPlayers()) {
+                if (playerList.contains(player))  Stats.tie(lobby.getGameName(), player);
+                else Stats.lose(lobby.getGameName(), player);
+                player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
+                lastHit.remove(player);
+                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+            }
+        }
+
+        if (winner instanceof Winner.TeamWinner(Team winnerTeam)) {
             for (Team team : lobby.getTeamList()) {
-                if (team == winnerTeam) {
+                if (team.equals(winnerTeam)) {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.win(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         lastHit.remove(teamPlayer);
-                        runDelayed(() -> {
-                            PlayerHandler.PlayerReset(teamPlayer);
-                        }, 4);
+                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 } else {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.lose(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
+                        teamPlayer.sendTitle("§6The " + team.getColorCode() + team.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         lastHit.remove(teamPlayer);
-                        runDelayed(() -> {
-                            PlayerHandler.PlayerReset(teamPlayer);
-                        }, 4);
+                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 }
             }
-        } else {
+        } else if (winner instanceof Winner.PlayerWinner(Player winnerPlayer)) {
+
             for (Player player : lobby.getPlayers()) {
-                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                Stats.win(lobby.getGameName(), winnerPlayer);
-                lastHit.remove(player);
-                if (!player.equals(winnerPlayer)) {
+                if (player.equals(winnerPlayer)) {
+                    Stats.win(lobby.getGameName(), player);
+                } else {
                     Stats.lose(lobby.getGameName(), player);
                 }
-                runDelayed(() -> {
-                    PlayerHandler.PlayerReset(player);
-                }, 4);
+
+                player.sendTitle("§6" + player.getName(), "won the Game!", 10, 70, 20);
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                lastHit.remove(player);
+                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
             }
         }
 
-        runDelayed(() -> {
-            LobbyHandler.LobbyReset(lobby);
-        }, 4);
+        Bukkit.getPluginManager().callEvent(new GameOverEvent(lobby));
+        runDelayed(() -> LobbyHandler.LobbyReset(lobby), 4);
     }
 
     private static void startCountdown(Lobby lobby) {
         lobby.setLobbyState("COUNTDOWN");
         GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
         List<Player> players = new ArrayList<>(lobby.getPlayers());
+        Integer timeLimit = gameConfig.getTimeLimit();
 
         Collections.shuffle(players); // Shuffly Shuff
 
         if (gameConfig.getTeams() > 0) {
             int teamCount = gameConfig.getTeams();
-            // if (lobby.getPlayers().size() < teamCount) teamCount = lobby.getPlayers().size();
 
             for (int i = 0; i < teamCount; i++) {
                 if (!lobby.addTeam()) {
@@ -136,7 +142,7 @@ public class GameManager implements Listener {
                     }
 
                     GameConfig.TeamSpawnPoint spawn = teamSpawns.removeFirst();
-                    Location spawnLocation = new Location(teamPlayer.getWorld(), spawn.getX(), spawn.getY(), spawn.getZ());
+                    Location spawnLocation = new Location(teamPlayer.getWorld(), spawn.x(), spawn.y(), spawn.z());
                     teamPlayer.teleport(spawnLocation);
 
                     if (gameConfig.getRespawnMode()) {
@@ -150,7 +156,7 @@ public class GameManager implements Listener {
 
             for (Player player : players) {
                 GameConfig.SpawnPoint spawn = spawnPoints.removeFirst();
-                Location spawnLocation = new Location(player.getWorld(), spawn.getX(), spawn.getY(), spawn.getZ());
+                Location spawnLocation = new Location(player.getWorld(), spawn.x(), spawn.y(), spawn.z());
                 player.teleport(spawnLocation);
 
                 if (gameConfig.getRespawnMode()) {
@@ -180,6 +186,7 @@ public class GameManager implements Listener {
                             player.getInventory().addItem(new ItemStack(material));
                         }
                         frozenPlayers.remove(player);
+                        runDelayed(() -> timeLimitGame(lobby), timeLimit);
                     }
                     cancel();
                 }
@@ -267,6 +274,11 @@ public class GameManager implements Listener {
         if (lobby.isFull()) {
             startGame(lobby);
         }
+    }
+
+    public static void timeLimitGame(Lobby lobby) {
+        List<Player> alive = alivePlayers.get(lobby);
+        GameManager.endGame(lobby, new Winner.TieWinner(alive));
     }
 
     private void copyWorldFolder(File source, File destination) throws Exception {
@@ -414,7 +426,7 @@ public class GameManager implements Listener {
                     }
 
                     if (aliveTeams == 1 && lastAliveTeam != null) {
-                        winGame(lobby, null, lastAliveTeam);
+                        endGame(lobby, new Winner.TeamWinner(lastAliveTeam));
                     }
                 } else {
                     if (!config.getRespawnMode()) {
@@ -422,7 +434,7 @@ public class GameManager implements Listener {
 
                         if (alive != null && alive.size() == 1) {
                             Player winner = alive.getFirst();
-                            winGame(lobby, winner, null);
+                            endGame(lobby, new Winner.PlayerWinner(winner));
                         }
                     } else {
                         int delay = config.getRespawnDelay();
