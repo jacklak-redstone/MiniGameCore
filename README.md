@@ -54,7 +54,7 @@ available-games:
 banned-players:
 - 2e0749e5-4ec0-4201-b58d-c4277014749c
 - 337482fe-8a15-47f6-bea5-a84918a86393
-keep-worlds: false
+keep-worlds: falsewords
 ```
 Note: if `keep-worlds: true`, the plugin is going to move them to `./plugins/MiniGameCore/ArchivedWorlds` instead of deleting them.
 
@@ -128,7 +128,7 @@ game:
 
 ## ‼️ API
 
-You can use the MiniGameCoreAPI by importing the Project using Gradle! Past this in your `build.gradle`:
+You can use the MiniGameCoreAPI by importing the Project using Gradle! Paste this in your `build.gradle`:
 ```
 repositories {
     maven { url "https://jitpack.io"  }
@@ -143,15 +143,18 @@ In your project, import classes/events/methods using `import wueffi.MiniGameCore
 
 **Available Events are:** \
 `GameStartEvent` with `event.getGameName()` and `event.getLobby` 
+`GameOverEvent` with `event.getLobby()` and `event.getWinner`
 
 **Helpful MGC Classes are:** \
 [Lobby](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Lobby.java) \
-[Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java) 
+[Team](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Team.java) \
+[Winner](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Winner.java) (technically an interface but still useful to know)
 
 **Available API methods are:** \
 `getLobbyManager()` -> returns MiniGameCores LobbyManager instance \
 `winPlayer(Lobby lobby, Player player)` -> let a singular Player win a game \
 `winTeam(Lobby lobby, Team team)` -> let a Team win a game \
+`tieGame(Lobby lobby)` -> ties that game \
 `playerDeath(UUID playerid)` -> notify MiniGameCore of a Players Death \
 `playerAlive(UUID playerid)` -> notify MiniGameCore of a Players Respawn \
-`getRespawnLocation(UUID playerid)` -> returns the Respawnlocation of a player 
+`getRespawnLocation(UUID playerid)` -> returns the Respawnlocation of a player
