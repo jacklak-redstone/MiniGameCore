@@ -54,7 +54,7 @@ available-games:
 banned-players:
 - 2e0749e5-4ec0-4201-b58d-c4277014749c
 - 337482fe-8a15-47f6-bea5-a84918a86393
-keep-worlds: falsewords
+keep-worlds: false
 ```
 Note: if `keep-worlds: true`, the plugin is going to move them to `./plugins/MiniGameCore/ArchivedWorlds` instead of deleting them.
 
@@ -142,8 +142,8 @@ dependencies {
 In your project, import classes/events/methods using `import wueffi.MiniGameCore.x`
 
 **Available Events are:** \
-`GameStartEvent` with `event.getGameName()` and `event.getLobby` 
-`GameOverEvent` with `event.getLobby()` and `event.getWinner`
+`GameStartEvent` with `event.getGameName()` and `event.getLobby()` \
+`GameOverEvent` with `event.getLobby()` and `event.getWinner()`
 
 **Helpful MGC Classes are:** \
 [Lobby](https://github.com/Wueffi/MiniGameCore/blob/master/src/main/java/wueffi/MiniGameCore/utils/Lobby.java) \
