@@ -466,6 +466,7 @@ public class MiniGameCommand implements CommandExecutor {
                     int played = Stats.getPlayed(game, targetplayer);
                     int wins = Stats.getWins(game, targetplayer);
                     int losses = Stats.getLosses(game, targetplayer);
+                    int ties = Stats.getTies(game, targetplayer);
                     float winrate = 0;
 
                     if (played > 0 || wins > 0 || losses > 0) {
@@ -473,7 +474,7 @@ public class MiniGameCommand implements CommandExecutor {
                             winrate = ((float) wins / played) * 100;
                             winrate = Math.round(winrate * 10) / 10.0f;
                         }
-                        player.sendMessage("§7- §a" + game + "§7: §f" + played + " §agames played, §6" + wins + " §agames won, §c" + losses + " §alost. Win rate: §3" + winrate + "§a%");
+                        player.sendMessage("§7- §a" + game + "§7: §f" + played + " §agames played, §6" + wins + " §agames won, §3" + ties + " §agames tied, §c" + losses + " §alost. Win rate: §3" + winrate + "§a%");
                     }
                 }
                 break;

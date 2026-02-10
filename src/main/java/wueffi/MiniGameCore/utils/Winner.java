@@ -1,31 +1,17 @@
 package wueffi.MiniGameCore.utils;
 
 import org.bukkit.entity.Player;
+import java.util.List;
 
 public sealed interface Winner
-        permits Winner.PlayerWinner, Winner.TeamWinner {
+        permits Winner.PlayerWinner, Winner.TeamWinner, Winner.TieWinner {
 
-    final class PlayerWinner implements Winner {
-        private final Player player;
-
-        public PlayerWinner(Player player) {
-            this.player = player;
-        }
-
-        public Player getPlayer() {
-            return player;
-        }
+    record PlayerWinner(Player player) implements Winner {
     }
 
-    final class TeamWinner implements Winner {
-        private final Team team;
+    record TeamWinner(Team team) implements Winner {
+    }
 
-        public TeamWinner(Team team) {
-            this.team = team;
-        }
-
-        public Team getTeam() {
-            return team;
-        }
+    record TieWinner(List<Player> playerList) implements Winner {
     }
 }

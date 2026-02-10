@@ -166,19 +166,20 @@ public class ScoreBoard {
                 }
             }
         } else {
-            obj.getScore(title).setScore(10);
-            obj.getScore("§r").setScore(9);
-            obj.getScore("§f§lYour Stats:").setScore(8);
-            obj.getScore("§fMost played Game: §3" + mostPlayed).setScore(7);
-            obj.getScore("§fTotal played: §2" + played).setScore(6);
-            obj.getScore("§fWon: §6" + won).setScore(5);
-            obj.getScore("§fLost: §c" + lost).setScore(4);
-            obj.getScore("§fTied: §7" + tied).setScore(3);
+            obj.getScore(title).setScore(11);
+            obj.getScore("§r").setScore(10);
+            obj.getScore("§f§lYour Stats:").setScore(9);
+            obj.getScore("§fMost played Game: §3" + mostPlayed).setScore(8);
+            obj.getScore("§fTotal played: §2" + played).setScore(7);
+            obj.getScore("§fWon: §6" + won).setScore(6);
+            obj.getScore("§fLost: §c" + lost).setScore(5);
+            obj.getScore("§fTied: §7" + tied).setScore(4);
             float winrate = played > 0 ? ((float) won / played) * 100 : 0;
             winrate = Math.round(winrate * 10) / 10.0f;
-            obj.getScore("§fWinrate: §5" + winrate + "%").setScore(2);
+            obj.getScore("§fWinrate: §5" + winrate + "%").setScore(3);
         }
 
+        obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
         obj.getScore("§7Made with ❤ by Waffle").setScore(0);
 
