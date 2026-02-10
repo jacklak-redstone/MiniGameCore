@@ -60,6 +60,7 @@ public class GameManager implements Listener {
     public static void endGame(Lobby lobby, Winner winner) {
         if (winner == null) {
             for (Player player : lobby.getPlayers()) {
+                Stats.tie(lobby.getGameName(), player);
                 player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
                 lastHit.remove(player);
                 runDelayed(() -> PlayerHandler.PlayerReset(player), 4);

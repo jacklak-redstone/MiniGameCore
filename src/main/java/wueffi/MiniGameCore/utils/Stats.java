@@ -43,11 +43,14 @@ public class Stats {
     };
 
     private static void ensurePlayer(UUID uuid, String game) {
-        String base = uuid.toString() + "." + game;
+        String base = uuid + "." + game;
         if (!statsConfig.contains(base)) {
             statsConfig.set(base + ".played", 0);
             statsConfig.set(base + ".won", 0);
             statsConfig.set(base + ".lost", 0);
+        }
+        if (!statsConfig.contains(base + ".tied")) { // Tied games are not standard yet, remove this extra check and make it normal when they are
+            statsConfig.set(base + ".tied", 0);
         }
     }
 
@@ -71,6 +74,16 @@ public class Stats {
         save();
     }
 
+    public static void tie(String game, Player player) {
+        UUID uuid = player.getUniqueId();
+        ensurePlayer(uuid, game);
+
+        String base = uuid + "." + game;
+        statsConfig.set(base + ".played", statsConfig.getInt(base + ".played") + 1);
+        statsConfig.set(base + ".tied", statsConfig.getInt(base + ".tied") + 1);
+        save();
+    }
+
     public static int getPlayed(String game, OfflinePlayer player) {
         statsConfig = YamlConfiguration.loadConfiguration(statsFile);
         String base = player.getUniqueId() + "." + game;
@@ -87,6 +100,12 @@ public class Stats {
         statsConfig = YamlConfiguration.loadConfiguration(statsFile);
         String base = player.getUniqueId() + "." + game;
         return statsConfig.getInt(base + ".lost");
+    }
+
+    public static int getTies(String game, OfflinePlayer player) {
+        statsConfig = YamlConfiguration.loadConfiguration(statsFile);
+        String base = player.getUniqueId() + "." + game;
+        return statsConfig.getInt(base + ".ties");
     }
 
     public static int getTotalPlayed(OfflinePlayer player) {
@@ -125,6 +144,20 @@ public class Stats {
         if (statsConfig.contains(uuid)) {
             for (String game : statsConfig.getConfigurationSection(uuid).getKeys(false)) {
                 total += statsConfig.getInt(uuid + "." + game + ".lost");
+            }
+        }
+
+        return total;
+    }
+
+    public static int getTotalTies(OfflinePlayer player) {
+        statsConfig = YamlConfiguration.loadConfiguration(statsFile);
+        String uuid = player.getUniqueId().toString();
+        int total = 0;
+
+        if (statsConfig.contains(uuid)) {
+            for (String game : statsConfig.getConfigurationSection(uuid).getKeys(false)) {
+                total += statsConfig.getInt(uuid + "." + game + ".ties");
             }
         }
 

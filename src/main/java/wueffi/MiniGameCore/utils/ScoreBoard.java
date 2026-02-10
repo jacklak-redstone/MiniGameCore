@@ -120,7 +120,7 @@ public class ScoreBoard {
         player.setScoreboard(board);
     }
 
-    public static void createIdleBoard(Player player, String mostPlayed, int played, int won, int lost, List<Lobby> openLobbies, List<Lobby> closedLobbies) {
+    public static void createIdleBoard(Player player, String mostPlayed, int played, int won, int lost, int tied, List<Lobby> openLobbies, List<Lobby> closedLobbies) {
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         String title = animations.get(animationIndex);
         Objective obj = board.registerNewObjective("idle", "dummy", TITLE);
@@ -173,13 +173,12 @@ public class ScoreBoard {
             obj.getScore("§fTotal played: §2" + played).setScore(6);
             obj.getScore("§fWon: §6" + won).setScore(5);
             obj.getScore("§fLost: §c" + lost).setScore(4);
-
+            obj.getScore("§fTied: §7" + tied).setScore(3);
             float winrate = played > 0 ? ((float) won / played) * 100 : 0;
             winrate = Math.round(winrate * 10) / 10.0f;
-            obj.getScore("§fWinrate: §5" + winrate + "%").setScore(3);
+            obj.getScore("§fWinrate: §5" + winrate + "%").setScore(2);
         }
 
-        obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
         obj.getScore("§7Made with ❤ by Waffle").setScore(0);
 
