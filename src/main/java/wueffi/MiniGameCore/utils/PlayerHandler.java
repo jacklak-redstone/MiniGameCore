@@ -40,7 +40,6 @@ public class PlayerHandler implements Listener {
                 }
                 LobbyHandler.LobbyReset(lobby);
             } else {
-                GameManager.playerDeath(player.getUniqueId());
                 lobby.removePlayer(player);
                 if (lobby.getPlayers().isEmpty()) {
                     LobbyHandler.LobbyReset(lobby);
@@ -72,6 +71,7 @@ public class PlayerHandler implements Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        GameManager.playerDeath(player.getUniqueId());
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             PlayerReset(player);
         }, 5L);

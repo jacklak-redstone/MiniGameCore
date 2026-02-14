@@ -307,7 +307,9 @@ public class GameManager implements Listener {
 
     public static void playerDeath(UUID playerId) {
         Player player = Bukkit.getPlayer(playerId);
+        if (player == null) return;
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) return;
 
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
@@ -371,7 +373,7 @@ public class GameManager implements Listener {
 
         if (lobby != null) {
             event.setCancelled(true);
-            player.setHealth(10);
+            player.setHealth(20);
 
             final World lobbyWorld = Bukkit.getWorld(lobby.getWorldFolder().getName());
             if (lobbyWorld != null) {
