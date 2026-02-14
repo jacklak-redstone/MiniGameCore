@@ -27,6 +27,7 @@ public class GameConfig {
     private final boolean allowPVP;
     private final boolean respawnByAPI;
     private final int timeLimit;
+    private final boolean allowFriendlyFire;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -40,6 +41,7 @@ public class GameConfig {
         this.allowPVP = config.getBoolean("game.allowPVP", true);
         this.respawnByAPI = config.getBoolean("game.respawnByAPI", false);
         this.timeLimit = config.getInt("game.timeLimit", 600); //10 Minutes
+        this.allowFriendlyFire = config.getBoolean("game.allowFriendlyFire", false);
 
         if (config.contains("game.spawnPoints")) {
             for (String key : config.getConfigurationSection("game.spawnPoints").getKeys(false)) {
@@ -144,6 +146,10 @@ public class GameConfig {
         return respawnByAPI;
     }
 
+    public boolean getAllowFriendlyFire() {
+        return allowFriendlyFire;
+    }
+
     public Integer getRespawnDelay() {
         return RespawnDelay;
     }
@@ -162,21 +168,6 @@ public class GameConfig {
     public record TeamSpawnPoint(int x, int y, int z) {
     }
 
-    public static class TeamSpawnPoints {
-        private final String teamName;
-        private final List<TeamSpawnPoint> spawnPoints;
-
-        public TeamSpawnPoints(String teamName, List<TeamSpawnPoint> spawnPoints) {
-            this.teamName = teamName;
-            this.spawnPoints = spawnPoints;
-        }
-
-        public String getTeamName() {
-            return teamName;
-        }
-
-        public List<TeamSpawnPoint> getSpawnPoints() {
-            return spawnPoints;
-        }
+    public record TeamSpawnPoints(String teamName, List<TeamSpawnPoint> spawnPoints) {
     }
 }

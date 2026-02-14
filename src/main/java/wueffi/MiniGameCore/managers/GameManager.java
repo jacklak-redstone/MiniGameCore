@@ -132,7 +132,7 @@ public class GameManager implements Listener {
 
             for (int teamIndex = 0; teamIndex < teamCount; teamIndex++) {
                 Set<Player> teamPlayers = lobby.getTeam(teamIndex).getPlayers();
-                List<GameConfig.TeamSpawnPoint> teamSpawns = new ArrayList<>(gameConfig.getTeamSpawnPoints().get(teamIndex).getSpawnPoints());
+                List<GameConfig.TeamSpawnPoint> teamSpawns = new ArrayList<>(gameConfig.getTeamSpawnPoints().get(teamIndex).spawnPoints());
                 Collections.shuffle(teamSpawns);
 
                 for (Player teamPlayer : teamPlayers) {
@@ -277,8 +277,10 @@ public class GameManager implements Listener {
     }
 
     public static void timeLimitGame(Lobby lobby) {
-        List<Player> alive = alivePlayers.get(lobby);
-        GameManager.endGame(lobby, new Winner.TieWinner(alive));
+        if (LobbyManager.getInstance().getClosedLobbies().contains(lobby) || LobbyManager.getInstance().getOpenLobbies().contains(lobby)) {
+            List<Player> alive = alivePlayers.get(lobby);
+            GameManager.endGame(lobby, new Winner.TieWinner(alive));
+        }
     }
 
     private void copyWorldFolder(File source, File destination) throws Exception {
@@ -504,31 +506,32 @@ public class GameManager implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event) {
-        final Entity damager = event.getDamager();
-        final Entity damaged = event.getEntity();
+        if (!(event.getDamager() instanceof Player damager && event.getEntity() instanceof Player damaged)) return;
 
-        if (damager instanceof Player && damaged instanceof Player) {
-            Lobby lobby = LobbyManager.getLobbyByPlayer((Player) damager);
-            if (lobby == null) {
-                event.setCancelled(false);
-                return;
-            }
-            if (Objects.equals(lobby.getLobbyState(), "WAITING")) {
-                damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
-                event.setCancelled(true);
-                return;
-            }
+        Lobby lobby = LobbyManager.getLobbyByPlayer(damager);
+        if (lobby == null) return;
 
-            GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
-            if (!config.getPVPMode() && Objects.equals(lobby.getLobbyState(), "GAME")) {
-                event.setCancelled(true);
-                damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
-                return;
-            }
-
-            lastHit.remove((Player) damaged);
-            lastHit.put((Player) damaged, (Player) damager);
+        if (Objects.equals(lobby.getLobbyState(), "WAITING")) {
+            damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
+            event.setCancelled(true);
+            return;
         }
+
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        if (!config.getPVPMode() && Objects.equals(lobby.getLobbyState(), "GAME")) {
+            event.setCancelled(true);
+            damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
+            return;
+        }
+
+        if (!config.getAllowFriendlyFire() && config.getTeams() > 0 && lobby.getTeamByPlayer(damager).equals(lobby.getTeamByPlayer(damaged))) {
+            event.setCancelled(true);
+            damager.sendMessage("§8[§6MiniGameCore§8]§c Friendly fire is not enabled for this minigame");
+            return;
+        }
+
+        lastHit.remove(damaged);
+        lastHit.put(damaged, damager);
     }
 
     @EventHandler
