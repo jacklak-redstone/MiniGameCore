@@ -19,6 +19,7 @@ public class TeamChatCommand implements CommandExecutor {
 
         if (!(player.hasPermission("mgcore.teamchat"))) {
             player.sendMessage("§cYou do not have permission to use this command!");
+            return true;
         }
 
         if (args.length < 1) return false; // Bukkit handles the usage message for us
