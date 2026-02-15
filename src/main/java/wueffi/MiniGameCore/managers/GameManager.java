@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -564,6 +565,20 @@ public class GameManager implements Listener {
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
         if (config.getBlockedDamageCauses().contains(damageCause)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerCraft(CraftItemEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+
+        if (lobby == null) return;
+        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+
+        if (!config.getAllowCrafting()) {
+            player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");
             event.setCancelled(true);
         }
     }

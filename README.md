@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-1.3.4-blue)
+![Static Badge](https://img.shields.io/badge/Version-1.3.5-blue)
 # MiniGameCore
 
 **MiniGameCore** is a central plugin for managing minigame lobbies in Minecraft Paper Servers. It handles hosting, joining, starting, and stopping games – with animated scoreboards, statistics, and multiverse support.
@@ -79,6 +79,7 @@ All available options:
 | `blocked_damage_causes` | Stop these damage causes from happening                           | ❌ No                  |
 | `timeLimit`             | Stops a game after X seconds have passed                          | ❌ No (default: 600)   |
 | `allowFriendlyFire`     | Allow members of the same team to attack each other               | ❌ No (default: false) |
+| `allowCrafting`         | Allows Players to craft items during the game                     | ❌ No (default: false) |
 
 Example config for an 8 player Spleef-Game:
 ```

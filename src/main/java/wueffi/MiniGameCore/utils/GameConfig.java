@@ -28,6 +28,7 @@ public class GameConfig {
     private final boolean respawnByAPI;
     private final int timeLimit;
     private final boolean allowFriendlyFire;
+    private final boolean allowCrafting;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -42,6 +43,7 @@ public class GameConfig {
         this.respawnByAPI = config.getBoolean("game.respawnByAPI", false);
         this.timeLimit = config.getInt("game.timeLimit", 600); //10 Minutes
         this.allowFriendlyFire = config.getBoolean("game.allowFriendlyFire", false);
+        this.allowCrafting = config.getBoolean("game.allowCrafting", false);
 
         if (config.contains("game.spawnPoints")) {
             for (String key : config.getConfigurationSection("game.spawnPoints").getKeys(false)) {
@@ -156,6 +158,10 @@ public class GameConfig {
 
     public Integer getTimeLimit() {
         return timeLimit;
+    }
+
+    public boolean getAllowCrafting() {
+        return allowCrafting;
     }
 
     public Set<DamageCause> getBlockedDamageCauses() {
