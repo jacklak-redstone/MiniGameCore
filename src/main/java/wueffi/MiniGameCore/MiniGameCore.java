@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import wueffi.MiniGameCore.commands.MiniGameCommand;
 import wueffi.MiniGameCore.commands.PartyCommand;
+import wueffi.MiniGameCore.commands.TeamChatCommand;
 import wueffi.MiniGameCore.managers.GameManager;
 import wueffi.MiniGameCore.managers.LobbyManager;
 import wueffi.MiniGameCore.managers.ScoreBoardManager;
@@ -52,6 +53,7 @@ public class MiniGameCore extends JavaPlugin {
         getCommand("mg").setTabCompleter(new MiniGameTabCompleter(this));
         getCommand("party").setExecutor(new PartyCommand(this));
         getCommand("party").setTabCompleter(new PartyTabCompleter(this));
+        getCommand("teamchat").setExecutor(new TeamChatCommand());
         getLogger().info("Commands registered!");
 
         ScoreBoardManager.startAnimationLoop();

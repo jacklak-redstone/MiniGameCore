@@ -15,8 +15,15 @@ commands:
     description: Main party command.
     usage: /party <subcommand>
     permissions: mgcore.use
+  teamchat:
+    description: Command to chat with your team.
+    usage: /teamchat <message>
+    permissions: mgcore.teamchat
+    aliases: ["tc"]
 permissions:
   mgcore.use:
+    default: true
+  mgcore.teamchat:
     default: true
   mgcore.admin:
     default: op
