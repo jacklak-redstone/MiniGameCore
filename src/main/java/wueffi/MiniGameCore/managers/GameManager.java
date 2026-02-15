@@ -2,7 +2,6 @@ package wueffi.MiniGameCore.managers;
 
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -82,7 +81,7 @@ public class GameManager implements Listener {
                 } else {
                     for (Player teamPlayer : team.getPlayers()) {
                         Stats.lose(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6The " + team.getColorCode() + team.getColor() + " §6Team", "won the Game!", 10, 70, 20);
+                        teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                         lastHit.remove(teamPlayer);
                         runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
@@ -98,7 +97,7 @@ public class GameManager implements Listener {
                     Stats.lose(lobby.getGameName(), player);
                 }
 
-                player.sendTitle("§6" + player.getName(), "won the Game!", 10, 70, 20);
+                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                 lastHit.remove(player);
                 runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
