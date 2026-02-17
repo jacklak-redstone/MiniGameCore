@@ -314,7 +314,8 @@ public class GameManager implements Listener {
         GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
 
         if (config.getTeams() > 0) {
-            lobby.getTeamByPlayer(player).decreaseAlive();
+            Team team = lobby.getTeamByPlayer(player);
+            if (team != null) team.decreaseAlive();
         } else {
             List<Player> alivePlayersNew = alivePlayers.get(lobby);
             alivePlayersNew.remove(player);
@@ -388,13 +389,21 @@ public class GameManager implements Listener {
             Player killer = lastHit.get(player);
 
             if (config.getTeams() > 0) {
+                Team team = lobby.getTeamByPlayer(player);
+                String color1 = "";
+                if (team != null) color1 = team.getColorCode();
+
+                team = lobby.getTeamByPlayer(killer);
+                String color2 = "";
+                if (team != null) color2 = team.getColorCode();
+
                 if (killer != null) {
                     for (Player player2 : lobby.getPlayers()) {
-                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + "§7 was killed by " + lobby.getTeamByPlayer(killer).getColorCode() + killer.getName() + "§7.");
+                        player2.sendMessage( color1 + player.getName() + "§7 was killed by " + color2 + killer.getName() + "§7.");
                     }
                 } else {
                     for (Player player2 : lobby.getPlayers()) {
-                        player2.sendMessage(lobby.getTeamByPlayer(player).getColorCode() + player.getName() + " §7died.");
+                        player2.sendMessage(color1 + player.getName() + " §7died.");
                     }
                 }
             } else {
@@ -417,6 +426,7 @@ public class GameManager implements Listener {
 
                 if (config.getTeams() > 0) {
                     Team team = lobby.getTeamByPlayer(player);
+                    if (team == null) return;
                     team.decreaseAlive();
                     player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
 

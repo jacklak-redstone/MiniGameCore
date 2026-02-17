@@ -1,7 +1,6 @@
 package wueffi.MiniGameCore.utils;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import wueffi.MiniGameCore.MiniGameCore;
@@ -31,10 +30,10 @@ public class LobbyHandler {
         World world = Bukkit.getWorld(name);
 
         if (world != null) {
-            boolean unloaded = Bukkit.unloadWorld(world, false);
             for (Player player: world.getPlayers()) {
                 player.teleport(Objects.requireNonNull(Bukkit.getWorld("world")).getSpawnLocation());
             }
+            boolean unloaded = Bukkit.unloadWorld(world, false);
             if (!unloaded) {
                 plugin.getLogger().warning("Could not unload world: " + name);
                 return;
