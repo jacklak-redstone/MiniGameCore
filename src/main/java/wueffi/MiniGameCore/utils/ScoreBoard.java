@@ -18,7 +18,11 @@ public class ScoreBoard {
     private static int animationIndex = 0;
 
     public static void createGameBoard(Player player, List<Player> alive) {
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard board = player.getScoreboard();
+        for (Objective obj : board.getObjectives()) {
+            obj.unregister();
+        }
+
         Objective obj = board.registerNewObjective("game", "dummy", TITLE);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
@@ -43,18 +47,20 @@ public class ScoreBoard {
     }
 
     public static void createTeamGameBoard(Player player) {
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = board.registerNewObjective("game", "dummy", TITLE);
+        Scoreboard board = player.getScoreboard();
+        for (Objective obj : board.getObjectives()) {
+            obj.unregister();
+        }
+
+        Objective obj = board.registerNewObjective("teamgame", "dummy", TITLE);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         int aliveTeams = 0;
-        Team lastAliveTeam = null;
         for (Team team : lobby.getTeamList()) {
             if (team.getAlivePlayers() > 0) {
                 aliveTeams++;
-                lastAliveTeam = team;
             }
         }
 
@@ -90,7 +96,11 @@ public class ScoreBoard {
     }
 
     public static void createLobbyBoard(Player player, Lobby lobby) {
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard board = player.getScoreboard();
+        for (Objective obj : board.getObjectives()) {
+            obj.unregister();
+        }
+
         Objective obj = board.registerNewObjective("lobby", "dummy", TITLE);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
@@ -121,7 +131,11 @@ public class ScoreBoard {
     }
 
     public static void createIdleBoard(Player player, String mostPlayed, int played, int won, int lost, int tied, List<Lobby> openLobbies, List<Lobby> closedLobbies) {
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard board = player.getScoreboard();
+        for (Objective obj : board.getObjectives()) {
+            obj.unregister();
+        }
+
         String title = animations.get(animationIndex);
         Objective obj = board.registerNewObjective("idle", "dummy", TITLE);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);

@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wueffi.MiniGameCore.MiniGameCore;
@@ -59,7 +60,7 @@ public class ScoreBoardManager implements Listener {
             case "GAME":
                 Lobby gameLobby = LobbyManager.getLobbyByPlayer(player);
                 if (gameLobby != null) {
-                    GameConfig config = GameManager.loadGameConfigFromWorld(gameLobby.getWorldFolder());
+                    GameConfig config = GameManager.getConfig(gameLobby);
                     if (config.getTeams() > 0) {
                         ScoreBoard.createTeamGameBoard(player);
                     } else {

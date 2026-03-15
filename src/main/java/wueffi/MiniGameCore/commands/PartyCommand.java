@@ -80,8 +80,9 @@ public class PartyCommand implements CommandExecutor {
                     return true;
                 }
                 String partyName = args[1];
-                partyManager.createParty(partyName, player);
-                player.sendMessage("§8[§6MiniGameCore§8]§a You created the party: " + args[1]);
+                party = partyManager.createParty(partyName, player);
+                if (party == null) player.sendMessage("§8[§6MiniGameCore§8]§a You created the party: " + args[1]) ;
+                else player.sendMessage("§8[§6MiniGameCore§8]§a You created the party: " + party.getPartyName());
                 break;
             case "leave":
                 if (args.length != 1) {
@@ -101,7 +102,7 @@ public class PartyCommand implements CommandExecutor {
                     player.sendMessage("§8[§6MiniGameCore§8]§a You were the last player, deleting party...");
                     if (party.removePlayer(player)) {
                         player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
-                        PartyManager.removeParty(party.getPartyId());
+                        if (!PartyManager.removeParty(party.getPartyId())) player.sendMessage("§8[§6MiniGameCore§8]§c Could not remove party: " + party.getPartyName());
                     } else {
                         player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
                     }
@@ -114,7 +115,7 @@ public class PartyCommand implements CommandExecutor {
                         for (Player player1 : party.getPlayers()) {
                             player1.sendMessage("§8[§6MiniGameCore§8]§a Owner §7 " + player.getName() + "§a has left the party!");
                         }
-                        PartyManager.removeParty(party.getPartyId());
+                        if (!PartyManager.removeParty(party.getPartyId())) player.sendMessage("§8[§6MiniGameCore§8]§c Could not remove party: " + party.getPartyName());
                     } else {
                         player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
                     }

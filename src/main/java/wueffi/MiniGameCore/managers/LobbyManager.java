@@ -1,6 +1,8 @@
 package wueffi.MiniGameCore.managers;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import wueffi.MiniGameCore.utils.Lobby;
 
 import java.io.File;
@@ -65,5 +67,16 @@ public class LobbyManager {
         return lobbies.values().stream()
                 .filter(lobby -> Objects.equals(lobby.getLobbyState(), "GAME"))
                 .toList();
+    }
+
+    public static void cleanUpLobbies(Plugin plugin) {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (Lobby lobby : new ArrayList<>(LobbyManager.lobbies.values())) {
+                Player owner = lobby.getOwner();
+                if (owner == null || !owner.isOnline()) {
+                    LobbyManager.removeLobby(lobby.getLobbyId());
+                }
+            }
+        }, 0L, 400L);
     }
 }

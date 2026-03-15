@@ -34,10 +34,15 @@ public class GameManager implements Listener {
     public static final Set<Player> frozenPlayers = new HashSet<>();
     static Map<UUID, Location> playerRespawnPoints = new HashMap<>();
     private static MiniGameCore plugin;
-    private static Map<Player, Player> lastHit = new HashMap<>();
+    private static Map<UUID, UUID> lastHit = new HashMap<>();
+    static final Map<Lobby, GameConfig> configCache = new HashMap<>();
 
     public GameManager(MiniGameCore plugin) {
         GameManager.plugin = plugin;
+    }
+
+    public static GameConfig getConfig(Lobby lobby) {
+        return configCache.computeIfAbsent(lobby, l -> loadGameConfigFromWorld(l.getWorldFolder()));
     }
 
     public static void startGame(Lobby lobby) {
@@ -63,7 +68,8 @@ public class GameManager implements Listener {
                 if (playerList.contains(player))  Stats.tie(lobby.getGameName(), player);
                 else Stats.lose(lobby.getGameName(), player);
                 player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
-                lastHit.remove(player);
+                lastHit.remove(player.getUniqueId());
+                playerRespawnPoints.remove(player.getUniqueId());
                 runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
             }
         }
@@ -75,7 +81,8 @@ public class GameManager implements Listener {
                         Stats.win(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                        lastHit.remove(teamPlayer);
+                        lastHit.remove(teamPlayer.getUniqueId());
+                        playerRespawnPoints.remove(teamPlayer.getUniqueId());
                         runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 } else {
@@ -83,7 +90,8 @@ public class GameManager implements Listener {
                         Stats.lose(lobby.getGameName(), teamPlayer);
                         teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                         teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                        lastHit.remove(teamPlayer);
+                        lastHit.remove(teamPlayer.getUniqueId());
+                        playerRespawnPoints.remove(teamPlayer.getUniqueId());
                         runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
                     }
                 }
@@ -99,18 +107,20 @@ public class GameManager implements Listener {
 
                 player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                lastHit.remove(player);
+                lastHit.remove(player.getUniqueId());
+                playerRespawnPoints.remove(player.getUniqueId());
                 runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
             }
         }
 
+        configCache.remove(lobby);
         Bukkit.getPluginManager().callEvent(new GameOverEvent(lobby));
         runDelayed(() -> LobbyHandler.LobbyReset(lobby), 4);
     }
 
     private static void startCountdown(Lobby lobby) {
         lobby.setLobbyState("COUNTDOWN");
-        GameConfig gameConfig = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig gameConfig = getConfig(lobby);
         List<Player> players = new ArrayList<>(lobby.getPlayers());
         Integer timeLimit = gameConfig.getTimeLimit();
 
@@ -283,6 +293,11 @@ public class GameManager implements Listener {
         }
     }
 
+    public static void removeLastHitandFrozen(UUID uuid) {
+        lastHit.remove(uuid);
+        if (Bukkit.getPlayer(uuid) != null) frozenPlayers.remove(Bukkit.getPlayer(uuid));
+    }
+
     private void copyWorldFolder(File source, File destination) throws Exception {
         if (!source.exists()) {
             throw new Exception("Source folder does not exist.");
@@ -311,7 +326,7 @@ public class GameManager implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
         if (lobby == null) return;
 
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (config.getTeams() > 0) {
             Team team = lobby.getTeamByPlayer(player);
@@ -344,7 +359,7 @@ public class GameManager implements Listener {
             event.setCancelled(false);
             return;
         }
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
             player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to break this block!");
@@ -385,8 +400,8 @@ public class GameManager implements Listener {
             }
             player.setGameMode(GameMode.SPECTATOR);
 
-            GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
-            Player killer = lastHit.get(player);
+            GameConfig config = getConfig(lobby);
+            Player killer = Bukkit.getPlayer(lastHit.remove(player.getUniqueId()));
 
             if (config.getTeams() > 0) {
                 Team team = lobby.getTeamByPlayer(player);
@@ -492,7 +507,7 @@ public class GameManager implements Listener {
             return;
         }
 
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
             player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to place this block!");
@@ -509,7 +524,7 @@ public class GameManager implements Listener {
             return;
         }
 
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (!config.getDurabilityMode()) {
             event.setCancelled(true);
@@ -529,7 +544,7 @@ public class GameManager implements Listener {
             return;
         }
 
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
         if (!config.getPVPMode() && Objects.equals(lobby.getLobbyState(), "GAME")) {
             event.setCancelled(true);
             damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
@@ -542,8 +557,8 @@ public class GameManager implements Listener {
             return;
         }
 
-        lastHit.remove(damaged);
-        lastHit.put(damaged, damager);
+        lastHit.remove(damaged.getUniqueId());
+        lastHit.put(damaged.getUniqueId(), damager.getUniqueId());
     }
 
     @EventHandler
@@ -571,7 +586,7 @@ public class GameManager implements Listener {
 
         if (lobby == null) return;
         DamageCause damageCause = event.getCause();
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (config.getBlockedDamageCauses().contains(damageCause)) {
             event.setCancelled(true);
@@ -584,7 +599,7 @@ public class GameManager implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         if (lobby == null) return;
-        GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+        GameConfig config = getConfig(lobby);
 
         if (!config.getAllowCrafting()) {
             player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");

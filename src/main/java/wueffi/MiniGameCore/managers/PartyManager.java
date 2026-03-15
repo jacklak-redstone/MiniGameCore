@@ -10,7 +10,7 @@ import java.util.Map;
 public class PartyManager {
     private static final PartyManager instance = new PartyManager();
     private static final Map<String, Party> parties = new HashMap<>();
-    private final Map<String, Integer> partyCounter = new HashMap<>();
+    private static final Map<String, Integer> partyCounter = new HashMap<>();
 
     private PartyManager() {
     }
@@ -35,7 +35,10 @@ public class PartyManager {
     }
 
     public static boolean removeParty(String partyId) {
-        return parties.remove(partyId) != null;
+        Party party = parties.remove(partyId);
+        if (party == null) return false;
+        partyCounter.remove(party.getPartyName());
+        return true;
     }
 
     public Party createParty(String partyName, Player owner) {

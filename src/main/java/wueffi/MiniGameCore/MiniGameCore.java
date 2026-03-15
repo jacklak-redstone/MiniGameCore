@@ -61,6 +61,7 @@ public class MiniGameCore extends JavaPlugin {
 
         getLogger().info("Starting cleanup task...");
         CleanUpWorlds.cleanUpWorlds(this);
+        LobbyManager.cleanUpLobbies(this);
 
         ScoreBoardManager.startAnimationLoop();
 

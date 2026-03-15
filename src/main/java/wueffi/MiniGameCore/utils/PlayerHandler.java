@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import wueffi.MiniGameCore.managers.GameManager;
 import wueffi.MiniGameCore.managers.LobbyManager;
+import wueffi.MiniGameCore.managers.PartyManager;
 
 public class PlayerHandler implements Listener {
 
@@ -22,6 +23,7 @@ public class PlayerHandler implements Listener {
 
     public static void PlayerReset(Player player) {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        Party party = PartyManager.getPartyByPlayer(player);
 
         if (lobby != null) {
             GameConfig config = GameManager.loadGameConfigFromWorld(lobby.getWorldFolder());
@@ -44,6 +46,16 @@ public class PlayerHandler implements Listener {
                 if (lobby.getPlayers().isEmpty()) {
                     LobbyHandler.LobbyReset(lobby);
                 }
+            }
+        }
+        if (party != null) {
+            if (player == party.getOwner()) {
+                for (Player partyplayer : party.getPlayers()) {
+                    partyplayer.sendMessage("§8[§6MiniGameCore§8]§c Owner of the party left... resetting");
+                }
+                PartyManager.removeParty(party.getPartyId());
+            } else {
+                party.removePlayer(player);
             }
         }
         PlayerSoftReset(player);
@@ -71,6 +83,7 @@ public class PlayerHandler implements Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        GameManager.removeLastHitandFrozen(player.getUniqueId());
         GameManager.playerDeath(player.getUniqueId());
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             PlayerReset(player);
