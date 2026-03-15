@@ -407,7 +407,10 @@ public class GameManager implements Listener {
             player.setGameMode(GameMode.SPECTATOR);
 
             GameConfig config = getConfig(lobby);
-            Player killer = Bukkit.getPlayer(lastHit.remove(player.getUniqueId()));
+
+            Player killer = null;
+            UUID uuid = lastHit.get(player.getUniqueId());
+            if (uuid != null) killer = Bukkit.getPlayer(uuid);
 
             if (!config.getSilenceDeathMessages()) {
                 if (config.getTeams() > 0) {
@@ -475,7 +478,7 @@ public class GameManager implements Listener {
                         }
                     } else {
                         int delay = config.getRespawnDelay();
-                        UUID uuid = player.getUniqueId();
+                        uuid = player.getUniqueId();
                         Location respawnLocation = getRespawnPoint(uuid);
 
                         new BukkitRunnable() {
