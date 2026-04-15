@@ -31,6 +31,7 @@ public class MiniGameCore extends JavaPlugin {
         List<String> availableGames = getConfig().getStringList("available-games");
         List<UUID> bannedPlayers = new ArrayList<>();
         boolean keepWorlds = getConfig().getBoolean("keep-worlds");
+        boolean disableScoreBoard = getConfig().getBoolean("disable-scoreboard");
         for (String UUIDstring : getConfig().getStringList("banned-players")) {
             try {
                 UUID uuid = UUID.fromString(UUIDstring);
@@ -61,7 +62,7 @@ public class MiniGameCore extends JavaPlugin {
         CleanUpWorlds.cleanUpWorlds(this);
         LobbyManager.cleanUpLobbies(this);
 
-        ScoreBoardManager.startAnimationLoop();
+        if (!disableScoreBoard) ScoreBoardManager.startAnimationLoop();
 
         LobbyHandler.setPlugin(this);
         lobbyManager = LobbyManager.getInstance();
