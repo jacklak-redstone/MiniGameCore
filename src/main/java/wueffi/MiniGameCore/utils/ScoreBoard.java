@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ScoreBoard {
+public final class ScoreBoard {
 
     private static final List<String> animations = Arrays.asList("§b§l» Lobbies", "§b§l» Stats");
     private static final String TITLE = "§6§lMiniGameCore";
@@ -40,7 +40,7 @@ public class ScoreBoard {
 
         obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
-        obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+        obj.getScore("§7Made with ❤ by Waffle & others").setScore(0);
 
         player.setScoreboard(board);
     }
@@ -89,7 +89,7 @@ public class ScoreBoard {
 
         obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
-        obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+        obj.getScore("§7Made with ❤ by Waffle & others").setScore(0);
 
         player.setScoreboard(board);
     }
@@ -124,7 +124,7 @@ public class ScoreBoard {
 
         obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
-        obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+        obj.getScore("§7Made with ❤ by Waffle & others").setScore(0);
 
         player.setScoreboard(board);
     }
@@ -194,7 +194,7 @@ public class ScoreBoard {
 
         obj.getScore("§r§f").setScore(2);
         obj.getScore("§7─────────────────").setScore(1);
-        obj.getScore("§7Made with ❤ by Waffle").setScore(0);
+        obj.getScore("§7Made with ❤ by Waffle & others").setScore(0);
 
         player.setScoreboard(board);
     }

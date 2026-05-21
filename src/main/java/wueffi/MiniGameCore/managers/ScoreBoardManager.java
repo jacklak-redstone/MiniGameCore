@@ -17,10 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static wueffi.MiniGameCore.managers.GameManager.alivePlayers;
 
-public class ScoreBoardManager implements Listener {
-
+public final class ScoreBoardManager implements Listener {
+    private static final LobbyManager lobbyManager = MiniGameCore.getPlugin().getLobbyManager();
     private static final Map<Player, String> playerGameStatus = new HashMap<>();
     private static final MiniGameCore plugin = JavaPlugin.getPlugin(MiniGameCore.class);
     // private static final Logger log = LoggerFactory.getLogger(ScoreBoardManager.class);
@@ -61,20 +60,19 @@ public class ScoreBoardManager implements Listener {
                     if (config.getTeams() > 0) {
                         ScoreBoard.createTeamGameBoard(player);
                     } else {
-                        ScoreBoard.createGameBoard(player, new ArrayList<>(alivePlayers.get(gameLobby)));
+                        ScoreBoard.createGameBoard(player, new ArrayList<>(GameManager.getAlivePlayersByLobby(gameLobby)));
                     }
                 }
                 break;
             default:
-                LobbyManager Lobbymanager = LobbyManager.getInstance();
                 ScoreBoard.createIdleBoard(player,
                         Stats.getMostPlayedGame(player),
                         Stats.getTotalPlayed(player),
                         Stats.getTotalWins(player),
                         Stats.getTotalLosses(player),
                         Stats.getTotalTies(player),
-                        Lobbymanager.getOpenLobbies(),
-                        Lobbymanager.getClosedLobbies()
+                        lobbyManager.getOpenLobbies(),
+                        lobbyManager.getClosedLobbies()
                 );
         }
     }

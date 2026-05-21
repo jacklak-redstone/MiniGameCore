@@ -8,17 +8,13 @@ import wueffi.MiniGameCore.utils.Lobby;
 import java.io.File;
 import java.util.*;
 
-public class LobbyManager {
+public final class LobbyManager {
+    private static final Map<String, Lobby> lobbies = new HashMap<>();
     private static final LobbyManager instance = new LobbyManager();
-    static final Map<String, Lobby> lobbies = new HashMap<>();
 
-    private LobbyManager() {
+    public LobbyManager() {
     }
-
-    public static LobbyManager getInstance() {
-        return instance;
-    }
-
+    
     public static Lobby getLobbyByPlayer(Player player) {
         return lobbies.values().stream()
                 .filter(lobby -> lobby.containsPlayer(player))
@@ -26,7 +22,7 @@ public class LobbyManager {
                 .orElse(null);
     }
 
-    public static boolean removeLobby(String lobbyId) {
+    public boolean removeLobby(String lobbyId) {
         return lobbies.remove(lobbyId) != null;
     }
 
@@ -74,7 +70,7 @@ public class LobbyManager {
             for (Lobby lobby : new ArrayList<>(LobbyManager.lobbies.values())) {
                 Player owner = lobby.getOwner();
                 if (owner == null || !owner.isOnline()) {
-                    LobbyManager.removeLobby(lobby.getLobbyId());
+                    instance.removeLobby(lobby.getLobbyId());
                 }
             }
         }, 0L, 400L);

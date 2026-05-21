@@ -7,11 +7,12 @@ import wueffi.MiniGameCore.managers.LobbyManager;
 import wueffi.MiniGameCore.utils.Lobby;
 import wueffi.MiniGameCore.utils.Team;
 import wueffi.MiniGameCore.utils.Winner;
+import wueffi.MiniGameCore.MiniGameCore;
 
 import java.util.UUID;
 
-public class MiniGameCoreAPI {
-    private static final LobbyManager lobbyManager = LobbyManager.getInstance();
+public final class MiniGameCoreAPI {
+    private static final LobbyManager lobbyManager = MiniGameCore.getPlugin().getLobbyManager();
 
     public static LobbyManager getLobbyManager() {
         return lobbyManager;

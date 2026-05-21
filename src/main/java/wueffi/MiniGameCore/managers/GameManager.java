@@ -1,7 +1,6 @@
 package wueffi.MiniGameCore.managers;
 
 import org.bukkit.*;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -12,6 +11,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -31,13 +31,14 @@ import java.util.*;
 
 import static wueffi.MiniGameCore.utils.PlayerHandler.PlayerSoftReset;
 
-public class GameManager implements Listener {
+public final class GameManager implements Listener {
     static final Map<Lobby, List<Player>> alivePlayers = new HashMap<>();
-    public static final Set<Player> frozenPlayers = new HashSet<>();
-    static Map<UUID, Location> playerRespawnPoints = new HashMap<>();
+    private static final Set<Player> frozenPlayers = new HashSet<>();
+    private static final Map<UUID, Location> playerRespawnPoints = new HashMap<>();
     private static MiniGameCore plugin;
     private static final Map<UUID, UUID> lastHit = new HashMap<>();
-    static final Map<Lobby, GameConfig> configCache = new HashMap<>();
+    private static final Map<Lobby, GameConfig> configCache = new HashMap<>();
+    private static final LobbyManager lobbyManager = MiniGameCore.getPlugin().getLobbyManager();
 
     public GameManager(MiniGameCore plugin) {
         GameManager.plugin = plugin;
@@ -51,10 +52,8 @@ public class GameManager implements Listener {
         int minPlayers = loadGameConfigFromWorld(lobby.getWorldFolder()).getMinPlayers();
 
         if (lobby.getPlayers().size() < minPlayers) {
-            for (Player player : lobby.getPlayers()) {
-                player.sendMessage("§8[§6MiniGameCore§8]§c Not enough players to start Game! (required: " + minPlayers + ")");
+                lobby.getOwner().sendMessage("§8[§6MiniGameCore§8]§c Not enough players to start Game! (required: " + minPlayers + ")");
                 return;
-            }
         }
 
         for (Player player : lobby.getPlayers()) {
@@ -63,59 +62,80 @@ public class GameManager implements Listener {
             frozenPlayers.add(player);
             PlayerSoftReset(player);
         }
+
+        GameStartEvent gameStartEvent = new GameStartEvent(lobby.getGameName(), lobby);
+        Bukkit.getPluginManager().callEvent(gameStartEvent);
+
+        if (gameStartEvent.isCancelled()) {
+            for (Player player : lobby.getPlayers()) {
+                player.sendMessage("§8[§6MiniGameCore§8]§c Game start was cancelled!");
+            }
+            return;
+        }
+
+
         alivePlayers.put(lobby, new ArrayList<>(lobby.getPlayers()));
-        Bukkit.getPluginManager().callEvent(new GameStartEvent(lobby.getGameName(), lobby));
         startCountdown(lobby);
     }
 
     public static void endGame(Lobby lobby, Winner winner) {
-        if (winner instanceof Winner.TieWinner(List<Player> playerList)) {
-            for (Player player : lobby.getPlayers()) {
-                if (playerList.contains(player))  Stats.tie(lobby.getGameName(), player);
-                else Stats.lose(lobby.getGameName(), player);
-                player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
-                lastHit.remove(player.getUniqueId());
-                playerRespawnPoints.remove(player.getUniqueId());
-                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+        switch (winner) {
+            case Winner.TieWinner(Collection<Player> players) -> {
+                for (Player player : lobby.getPlayers()) {
+                    if (players.contains(player)) Stats.tie(lobby.getGameName(), player);
+                    else Stats.lose(lobby.getGameName(), player);
+                    player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
+                    lastHit.remove(player.getUniqueId());
+                    playerRespawnPoints.remove(player.getUniqueId());
+                    runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+                }
             }
-        }
-
-        if (winner instanceof Winner.TeamWinner(Team winnerTeam)) {
-            for (Team team : lobby.getTeamList()) {
-                if (team.equals(winnerTeam)) {
-                    for (Player teamPlayer : team.getPlayers()) {
-                        Stats.win(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
-                        teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                        lastHit.remove(teamPlayer.getUniqueId());
-                        playerRespawnPoints.remove(teamPlayer.getUniqueId());
-                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
-                    }
-                } else {
-                    for (Player teamPlayer : team.getPlayers()) {
-                        Stats.lose(lobby.getGameName(), teamPlayer);
-                        teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
-                        teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                        lastHit.remove(teamPlayer.getUniqueId());
-                        playerRespawnPoints.remove(teamPlayer.getUniqueId());
-                        runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
+            case Winner.TeamWinner(Team winnerTeam) -> {
+                for (Team team : lobby.getTeamList()) {
+                    if (team.equals(winnerTeam)) {
+                        for (Player teamPlayer : team.getPlayers()) {
+                            Stats.win(lobby.getGameName(), teamPlayer);
+                            teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
+                            teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                            lastHit.remove(teamPlayer.getUniqueId());
+                            playerRespawnPoints.remove(teamPlayer.getUniqueId());
+                            runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
+                        }
+                    } else {
+                        for (Player teamPlayer : team.getPlayers()) {
+                            Stats.lose(lobby.getGameName(), teamPlayer);
+                            teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
+                            teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                            lastHit.remove(teamPlayer.getUniqueId());
+                            playerRespawnPoints.remove(teamPlayer.getUniqueId());
+                            runDelayed(() -> PlayerHandler.PlayerReset(teamPlayer), 4);
+                        }
                     }
                 }
             }
-        } else if (winner instanceof Winner.PlayerWinner(Player winnerPlayer)) {
+            case Winner.PlayerWinner(Player winnerPlayer) -> {
+                for (Player player : lobby.getPlayers()) {
+                    if (player.equals(winnerPlayer)) {
+                        Stats.win(lobby.getGameName(), player);
+                    } else {
+                        Stats.lose(lobby.getGameName(), player);
+                    }
 
-            for (Player player : lobby.getPlayers()) {
-                if (player.equals(winnerPlayer)) {
-                    Stats.win(lobby.getGameName(), player);
-                } else {
-                    Stats.lose(lobby.getGameName(), player);
+                    player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                    lastHit.remove(player.getUniqueId());
+                    playerRespawnPoints.remove(player.getUniqueId());
+                    runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
                 }
-
-                player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                lastHit.remove(player.getUniqueId());
-                playerRespawnPoints.remove(player.getUniqueId());
-                runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+            }
+            case null, default -> {
+                for (Player player : lobby.getPlayers()) {
+                    player.sendTitle("§6The Game", "was aborted.", 10, 70, 20);
+                    player.playSound(player.getLocation(), Sound.BLOCK_BELL_USE, 1.0f, 1.0f);
+                    lastHit.remove(player.getUniqueId());
+                    playerRespawnPoints.remove(player.getUniqueId());
+                    runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
+                }
             }
         }
 
@@ -130,7 +150,7 @@ public class GameManager implements Listener {
         List<Player> players = new ArrayList<>(lobby.getPlayers());
         Integer timeLimit = gameConfig.getTimeLimit();
 
-        Collections.shuffle(players); // Shuffly Shuff
+        Collections.shuffle(players);
 
         if (gameConfig.getTeams() > 0) {
             int teamCount = gameConfig.getTeams();
@@ -219,8 +239,8 @@ public class GameManager implements Listener {
         if (configFile.exists()) {
             return new GameConfig(configFile);
         } else {
-            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName());
-            return new GameConfig(configFile);
+            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName() + ", this may cause NPEs.");
+            return null;
         }
     }
 
@@ -228,16 +248,14 @@ public class GameManager implements Listener {
         Bukkit.getScheduler().runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("MiniGameCore")), task, seconds * 20L);
     }
 
-    public void hostGame(String gameName, CommandSender sender) {
-        Player player = (Player) sender;
-
+    public static Lobby hostGame(String gameName, Player player) {
         String originalWorldName = gameName + "_world";
         String newWorldName = gameName + "_copy_" + System.currentTimeMillis();
 
         File originalWorldFolder = new File("plugins/MiniGameCore/MiniGames", originalWorldName);
         if (!originalWorldFolder.exists()) {
             plugin.getLogger().warning("Template world " + originalWorldName + " not found in" + originalWorldFolder.getAbsolutePath() + ".");
-            return;
+            return null;
         }
 
         File newWorldFolder = new File(Bukkit.getWorldContainer(), newWorldName);
@@ -247,19 +265,19 @@ public class GameManager implements Listener {
                 copyWorldFolder(originalWorldFolder, newWorldFolder);
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to copy world: " + e.getMessage());
-                return;
+                return null;
             }
             plugin.getLogger().info("World copied successfully.");
         } else {
             plugin.getLogger().warning("World folder " + originalWorldName + " not found.");
-            return;
+            return null;
         }
 
         World newWorld = Bukkit.createWorld(new WorldCreator(newWorldFolder.getName()));
 
         if (newWorld == null) {
             plugin.getLogger().warning("Failed to load copied world: " + newWorldName);
-            return;
+            return null;
         } else {
             Location spawnLocation = newWorld.getSpawnLocation();
             player.teleport(spawnLocation);
@@ -271,43 +289,42 @@ public class GameManager implements Listener {
 
         if (LobbyManager.getLobbyByPlayer(player) != null) {
             player.sendMessage("§8[§6MiniGameCore§8]§c You are already in a game or lobby!");
-            return;
+            return null;
         }
 
         GameConfig gameConfig = loadGameConfigFromWorld(newWorldFolder);
         int maxPlayers = gameConfig.getMaxPlayers();
 
-        LobbyManager lobbyManager = LobbyManager.getInstance();
         Lobby lobby = lobbyManager.createLobby(gameName, maxPlayers, player, newWorldFolder);
 
         if (lobby == null) {
             player.sendMessage("§8[§6MiniGameCore§8]§c Lobby could not be created!");
-            return;
+            return null;
         }
 
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            onlinePlayer.sendMessage("§8[§6MiniGameCore§8]§a " + player.getName() + " is hosting " + lobby.getGameName() + "! " +
-                    lobby.getPlayers().size() + "/" + maxPlayers + " players - type /mg join " + lobby.getLobbyId() + " to join the fun!");
-        }
+        Bukkit.broadcast("§8[§6MiniGameCore§8]§a " + player.getName() + " is hosting " + lobby.getGameName() + "! " +
+                lobby.getPlayers().size() + "/" + maxPlayers + " players - type /mg join " + lobby.getLobbyId() + " to join the fun!", gameConfig.getJoinPerm());
 
         if (lobby.isFull()) {
             startGame(lobby);
         }
+
+        return lobby;
     }
 
     public static void timeLimitGame(Lobby lobby) {
-        if (LobbyManager.getInstance().getClosedLobbies().contains(lobby) || LobbyManager.getInstance().getOpenLobbies().contains(lobby)) {
+        if (lobbyManager.getClosedLobbies().contains(lobby) || lobbyManager.getOpenLobbies().contains(lobby)) {
             List<Player> alive = alivePlayers.get(lobby);
             GameManager.endGame(lobby, new Winner.TieWinner(alive));
         }
     }
 
-    public static void removeLastHitandFrozen(UUID uuid) {
+    public static void removeLastHitAndFrozen(UUID uuid) {
         lastHit.remove(uuid);
         if (Bukkit.getPlayer(uuid) != null) frozenPlayers.remove(Bukkit.getPlayer(uuid));
     }
 
-    private void copyWorldFolder(File source, File destination) throws Exception {
+    private static void copyWorldFolder(File source, File destination) throws Exception {
         if (!source.exists()) {
             throw new Exception("Source folder does not exist.");
         }
@@ -358,6 +375,14 @@ public class GameManager implements Listener {
 
         alivePlayers.remove(lobby);
         alivePlayers.put(lobby, alivePlayersNew);
+    }
+
+    public static void clearFrozenPlayers() {
+        frozenPlayers.clear();
+    }
+
+    public static Collection<Player> getAlivePlayersByLobby(Lobby lobby) {
+        return alivePlayers.get(lobby);
     }
 
     @EventHandler
@@ -622,7 +647,7 @@ public class GameManager implements Listener {
 
     @EventHandler
     public void onPlayerCraft(CraftItemEvent event) {
-        Player player = (Player) event.getWhoClicked();
+        if (!(event.getWhoClicked() instanceof Player player)) return;
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
 
         if (lobby == null) return;
@@ -632,5 +657,17 @@ public class GameManager implements Listener {
             player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onHunger(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return; // annoyingly it uses HumanEntity :(
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) return;
+        GameConfig config = getConfig(lobby);
+
+        if (config.getDoHunger()) return;
+
+        event.setCancelled(true);
     }
 }
