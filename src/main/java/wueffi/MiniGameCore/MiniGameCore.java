@@ -42,7 +42,7 @@ public final class MiniGameCore extends JavaPlugin {
         plugin = this;
         saveDefaultConfig();
 
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "Velocity");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "velocity:main");
 
         List<String> availableGames = getConfig().getStringList("available-games");
         List<UUID> bannedPlayers = new ArrayList<>();

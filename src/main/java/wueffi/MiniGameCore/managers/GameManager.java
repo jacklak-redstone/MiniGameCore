@@ -355,7 +355,7 @@ public final class GameManager implements Listener {
         Bukkit.getOnlinePlayers().stream()
                 .findFirst()
                 .ifPresent(carrier ->
-                        carrier.sendPluginMessage(plugin, "Velocity", out.toByteArray())
+                        carrier.sendPluginMessage(plugin, "velocity:main", out.toByteArray())
                 );
 
         if (lobby.isFull()) {
