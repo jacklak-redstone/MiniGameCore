@@ -1,5 +1,7 @@
 package wueffi.MiniGameCore.managers;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -27,6 +29,7 @@ import wueffi.MiniGameCore.utils.*;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.*;
 
 import static wueffi.MiniGameCore.utils.PlayerHandler.PlayerSoftReset;
@@ -84,7 +87,7 @@ public final class GameManager implements Listener {
                 for (Player player : lobby.getPlayers()) {
                     if (players.contains(player)) Stats.tie(lobby.getGameName(), player);
                     else Stats.lose(lobby.getGameName(), player);
-                    player.sendTitle("§6The Game", "was tied!", 10, 70, 20);
+                    showTitle(player, "§6The Game", "was tied!", 10, 70, 20);
                     lastHit.remove(player.getUniqueId());
                     playerRespawnPoints.remove(player.getUniqueId());
                     runDelayed(() -> PlayerHandler.PlayerReset(player), 4);
@@ -121,7 +124,7 @@ public final class GameManager implements Listener {
                         Stats.lose(lobby.getGameName(), player);
                     }
 
-                    player.sendTitle("§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
+                    showTitle(player, "§6" + winnerPlayer.getName(), "won the Game!", 10, 70, 20);
                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                     lastHit.remove(player.getUniqueId());
                     playerRespawnPoints.remove(player.getUniqueId());
@@ -130,7 +133,7 @@ public final class GameManager implements Listener {
             }
             case null, default -> {
                 for (Player player : lobby.getPlayers()) {
-                    player.sendTitle("§6The Game", "was aborted.", 10, 70, 20);
+                    showTitle(player, "§6The Game", "was aborted.", 10, 70, 20);
                     player.playSound(player.getLocation(), Sound.BLOCK_BELL_USE, 1.0f, 1.0f);
                     lastHit.remove(player.getUniqueId());
                     playerRespawnPoints.remove(player.getUniqueId());
@@ -211,14 +214,14 @@ public final class GameManager implements Listener {
             public void run() {
                 if (timeLeft > 0) {
                     for (Player player : lobby.getPlayers()) {
-                        player.sendTitle("§aGame starting in " + timeLeft, "", 10, 70, 20);
+                        showTitle(player,"§aGame starting in " + timeLeft, "", 10, 70, 20);
                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1.0f, 2.0f);
                     }
                     timeLeft--;
                 } else {
                     lobby.setLobbyState("GAME");
                     for (Player player : lobby.getPlayers()) {
-                        player.sendTitle("§aGame Started!", "§cTeaming / Cheating is bannable!");
+                        showTitle(player, "§aGame Started!", "§cTeaming / Cheating is bannable!", 10, 70, 20);
                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 5.0f);
                         ScoreBoardManager.setPlayerStatus(player, "GAME");
                         for (Material material : gameConfig.getStartInventory()) {
@@ -381,6 +384,20 @@ public final class GameManager implements Listener {
         frozenPlayers.clear();
     }
 
+    private static void showTitle(Player player, String title, String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        Component mainTitle = Component.text(title);
+        Component subTitle = Component.text(subtitle);
+
+        Title.Times titleTimes = Title.Times.times(
+                Duration.ofMillis(50L * fadeInTicks),
+                Duration.ofMillis(50L * stayTicks),
+                Duration.ofMillis(50L * fadeOutTicks)
+        );
+
+        Title showPlayerTitle = Title.title(mainTitle, subTitle, titleTimes);
+        player.showTitle(showPlayerTitle);
+    }
+
     public static Collection<Player> getAlivePlayersByLobby(Lobby lobby) {
         return alivePlayers.get(lobby);
     }
@@ -517,7 +534,7 @@ public final class GameManager implements Listener {
                                 if (secondsLeft <= 0) {
                                     player.teleport(respawnLocation);
                                     player.setGameMode(GameMode.SURVIVAL);
-                                    player.sendTitle("§aRespawned!", "", 10, 20, 10);
+                                    showTitle(player, "§aRespawned!", "", 10, 20, 10);
 
                                     List<Player> alive = alivePlayers.get(lobby);
                                     if (alive != null && !alive.contains(player)) {
@@ -526,7 +543,7 @@ public final class GameManager implements Listener {
 
                                     this.cancel();
                                 } else {
-                                    player.sendTitle("§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
+                                    showTitle(player, "§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
                                     secondsLeft--;
                                 }
                             }
@@ -615,19 +632,26 @@ public final class GameManager implements Listener {
 
     @EventHandler
     public void catchContainerOpen(InventoryOpenEvent event) {
-        if(!event.getInventory().getType().equals(InventoryType.PLAYER))
-        {
-            final Player player = (Player) event.getPlayer();
-            Lobby lobby = LobbyManager.getLobbyByPlayer(player);
-            if (lobby == null) {
-                event.setCancelled(false);
-                return;
-            }
-            if (!Objects.equals(lobby.getLobbyState(), "GAME")) {
-                player.sendMessage("§8[§6MiniGameCore§8]§c You can't open Containers yet!");
-                event.setCancelled(true);
-            }
+        if (!(event.getPlayer() instanceof Player player)) return;
+        Lobby lobby = LobbyManager.getLobbyByPlayer(player);
+        if (lobby == null) {
+            event.setCancelled(false);
+            return;
         }
+        GameConfig config = getConfig(lobby);
+
+        if (lobby.getLobbyState().equals("GAME")) {
+            return;
+        }
+        if (config.getAllowOpeningContainers()) {
+            return;
+        }
+        if (event.getInventory().getType().equals(InventoryType.PLAYER)) {
+            return;
+        }
+
+        player.sendMessage("§8[§6MiniGameCore§8]§c You can't open Containers yet!");
+        event.setCancelled(true);
     }
 
     @EventHandler
