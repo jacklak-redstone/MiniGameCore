@@ -26,15 +26,15 @@ public final class MiniGameCoreAPI {
         GameManager.endGame(lobby, new Winner.TeamWinner(team));
     }
 
-    public static void playerDeath(UUID playerid) {
-        GameManager.playerDeath(playerid);
+    public static void playerDeath(UUID playerID) {
+        GameManager.playerDeath(playerID);
     }
 
-    public static void playerAlive(UUID playerid) {
-        GameManager.playerAlive(playerid);
+    public static void playerAlive(UUID playerID) {
+        GameManager.playerAlive(playerID);
     }
 
-    public static Location getRespawnLocation(UUID playerid) {
-        return  GameManager.getRespawnPoint(playerid);
+    public static Location getRespawnLocation(UUID playerID) {
+        return  GameManager.getRespawnPoint(playerID);
     }
 }

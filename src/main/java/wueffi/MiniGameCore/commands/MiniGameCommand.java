@@ -19,6 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static wueffi.MiniGameCore.MiniGameCore.sendMGCError;
+import static wueffi.MiniGameCore.MiniGameCore.sendMGCInfo;
+import static wueffi.MiniGameCore.managers.GameManager.showTitle;
+
 public final class MiniGameCommand implements CommandExecutor {
     private final MiniGameCore plugin;
     private static final Map<Player, Lobby> confirmations = new HashMap<>();
@@ -81,12 +85,12 @@ public final class MiniGameCommand implements CommandExecutor {
         String subcmd = args[0].toLowerCase();
 
         if (!commandsPermissions.containsKey(subcmd)) {
-            player.sendMessage("§8[§6MiniGameCore§8] §cUnknown subcommand!");
+            sendMGCError(player, "Unknown subcommand!");
             return true;
         }
 
         if (!(player.hasPermission(commandsPermissions.get(subcmd)) || player.hasPermission("mgcore.admin"))) {
-            player.sendMessage("§8[§6MiniGameCore§8] §cYou don't have permission to use that subcommand!!");
+            sendMGCError(player, "You don't have permission to use that subcommand!!");
             return true;
         }
 
@@ -101,12 +105,12 @@ public final class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 if (LobbyManager.getLobbyByPlayer(player) != null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are already in another lobby!");
+                    sendMGCError(player, "You are already in another lobby!");
                     return true;
                 }
                 String gameName = args[1];
                 if (!plugin.getAvailableGames().contains(gameName)) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cGame " + gameName + " not available!");
+                    sendMGCError(player, "Game " + gameName + " not available!");
                     return true;
                 }
                 party = PartyManager.getPartyByPlayer(player);
@@ -114,11 +118,11 @@ public final class MiniGameCommand implements CommandExecutor {
                     if (party.isOwner(player)) {
                         config = new GameConfig(new File("Minigames/" + gameName, "config.yml"));
                         if (!player.hasPermission(config.getHostPerm())) {
-                            player.sendMessage("§8[§6MiniGameCore§8] §cYou don't have permission to host " + gameName + "!");
+                            sendMGCError(player, "You don't have permission to host " + gameName + "!");
                             return true;
                         }
                         if (party.getPlayers().size() > config.getMaxPlayers()) {
-                            player.sendMessage("§8[§6MiniGameCore§8]§c Party too big for game!");
+                            sendMGCError(player, " Party too big for game!");
                             return true;
                         }
                         lobby = GameManager.hostGame(gameName, player);
@@ -148,19 +152,20 @@ public final class MiniGameCommand implements CommandExecutor {
                             PlayerHandler.PlayerSoftReset(player1);
                             player1.setGameMode(GameMode.SURVIVAL);
                             ScoreBoardManager.setPlayerStatus(player, "WAITING");
-                            player1.sendTitle("", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
+                            showTitle(player,"", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
                         }
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§c You are in a party!");
+                        sendMGCError(player, " You are in a party!");
                         return true;
                     }
                 } else {
                     lobby = GameManager.hostGame(gameName, player); // again, it handled the message for us
                 }
-                player.sendMessage("§8[§6MiniGameCore§8]§a Hosting game: " + args[1]);
+                sendMGCInfo(player, " Hosting game: " + args[1]);
                 ScoreBoardManager.setPlayerStatus(player, "WAITING");
+                if (lobby == null) break;
                 lobby.setLobbyState("WAITING");
-                player.sendTitle("", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
+                showTitle(player, "", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
                 break;
 
             case "join":
@@ -177,22 +182,22 @@ public final class MiniGameCommand implements CommandExecutor {
                 lobby = lobbyManager.getLobby(lobbyName);
 
                 if (lobby == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cLobby not found!");
+                    sendMGCError(player, "Lobby not found!");
                     return true;
                 }
 
                 if (LobbyManager.getLobbyByPlayer(player) != null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are already in another lobby!");
+                    sendMGCError(player, "You are already in another lobby!");
                     return true;
                 }
 
                 if (!Objects.equals(lobby.getLobbyState(), "WAITING")) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cThe game already started!");
+                    sendMGCError(player, "The game already started!");
                     return true;
                 }
 
                 if (lobby.isFull()) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cLobby is already full!");
+                    sendMGCError(player, "Lobby is already full!");
                     return true;
                 }
 
@@ -200,7 +205,7 @@ public final class MiniGameCommand implements CommandExecutor {
                 if (party != null) {
                     if (party.isOwner(player)) {
                         if (party.getPlayers().size() + lobby.getMaxPlayers() > lobby.getMaxPlayers()) {
-                            player.sendMessage("§8[§6MiniGameCore§8]§c Party too big for game!");
+                            sendMGCError(player, " Party too big for game!");
                             return true;
                         }
                         World world = Bukkit.getWorld(lobby.getWorldFolder().getName());
@@ -226,17 +231,17 @@ public final class MiniGameCommand implements CommandExecutor {
                             PlayerHandler.PlayerSoftReset(player1);
                             player1.setGameMode(GameMode.SURVIVAL);
                             ScoreBoardManager.setPlayerStatus(player, "WAITING");
-                            player1.sendTitle("", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
+                            showTitle(player1,"", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
                             return true;
                         }
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§c You are in a party!");
+                        sendMGCError(player, " You are in a party!");
                         return true;
                     }
                 }
 
                 if (!lobby.addPlayer(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cCould not join the lobby.");
+                    sendMGCError(player, "Could not join the lobby.");
                     return true;
                 }
                 for (Player gamer : lobby.getPlayers()) {
@@ -253,7 +258,7 @@ public final class MiniGameCommand implements CommandExecutor {
                 PlayerHandler.PlayerSoftReset(player);
                 player.setGameMode(GameMode.SURVIVAL);
                 ScoreBoardManager.setPlayerStatus(player, "WAITING");
-                player.sendTitle("", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
+                showTitle(player, "", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
                 break;
 
             case "confirm":
@@ -269,19 +274,20 @@ public final class MiniGameCommand implements CommandExecutor {
                 Lobby confirmLobby = confirmations.remove(player);
 
                 if (confirmLobby == null || !"WAITING".equals(confirmLobby.getLobbyState())) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cThe Lobby already started or is no longer valid!");
+                    sendMGCError(player, "The Lobby already started or is no longer valid!");
                     return true;
                 }
                 if (player != confirmLobby.getOwner()) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are not the owner of this lobby! How did you manage to do this?");
+                    sendMGCError(player, "You are not the owner of this lobby! How did you manage to do this?");
                     return true;
                 }
 
                 for (Player p : confirmLobby.getPlayers()) {
                     p.sendMessage("§8[§6MiniGameCore§8] §7" + confirmLobby.getOwner().getName() + " §8force-started the Game!");
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §aStarting game: " + confirmLobby.getLobbyId());
+                sendMGCInfo(player,"Starting game: " + confirmLobby.getLobbyId());
                 GameManager.startGame(confirmLobby);
+                break;
 
             case "ready":
                 if (args.length >= 2) {
@@ -290,22 +296,22 @@ public final class MiniGameCommand implements CommandExecutor {
                 }
 
                 if (LobbyManager.getLobbyByPlayer(player) == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are in no lobby!");
+                    sendMGCError(player, "You are in no lobby!");
                     return true;
                 }
 
                 lobby = LobbyManager.getLobbyByPlayer(player);
 
                 if (!Objects.equals(lobby.getLobbyState(), "WAITING")) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cThe game already started!");
+                    sendMGCError(player, "The game already started!");
                     return true;
                 }
 
                 if (!lobby.ready(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cCould not ready!");
+                    sendMGCError(player, "Could not ready!");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §aYou are now ready!");
+                sendMGCInfo(player, "You are now ready!");
                 break;
 
             case "unready":
@@ -315,22 +321,22 @@ public final class MiniGameCommand implements CommandExecutor {
                 }
 
                 if (LobbyManager.getLobbyByPlayer(player) == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are in no lobby!");
+                    sendMGCError(player, "You are in no lobby!");
                     return true;
                 }
 
                 lobby = LobbyManager.getLobbyByPlayer(player);
 
                 if (!Objects.equals(lobby.getLobbyState(), "WAITING")) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cThe game already started!");
+                    sendMGCError(player, "The game already started!");
                     return true;
                 }
 
                 if (!lobby.unready(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cCould not unready!");
+                    sendMGCError(player, "Could not unready!");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §aYou not ready anymore!");
+                sendMGCInfo(player, "You not ready anymore!");
                 break;
 
             case "leave":
@@ -342,7 +348,7 @@ public final class MiniGameCommand implements CommandExecutor {
                 lobby = LobbyManager.getLobbyByPlayer(player);
 
                 if (lobby == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are not in any lobby!");
+                    sendMGCError(player, "You are not in any lobby!");
                     return true;
                 }
 
@@ -353,7 +359,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     }
 
                     if (lobby.isOwner(player) || lobby.getPlayers().isEmpty()) {
-                        player.sendMessage("§8[§6MiniGameCore§8] §cYou were the owner of this lobby. The game will now be stopped.");
+                        sendMGCError(player, "You were the owner of this lobby. The game will now be stopped.");
                         for (Player gamer : lobby.getPlayers()) {
                             gamer.sendMessage("§8[§6MiniGameCore§8]§c Lobby Owner " + player.getName() + " left the Lobby! Resetting...");
                             PlayerHandler.PlayerReset(gamer);
@@ -362,7 +368,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     }
                     ScoreBoardManager.setPlayerStatus(player, "NONE");
                 } else {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cFailed to leave the game. Please try again.");
+                    sendMGCError(player, "Failed to leave the game. Please try again.");
                 }
                 break;
 
@@ -370,21 +376,21 @@ public final class MiniGameCommand implements CommandExecutor {
             case "start":
                 lobby = LobbyManager.getLobbyByPlayer(player);
                 if (lobby == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are not in a lobby!");
+                    sendMGCError(player, "You are not in a lobby!");
                     return true;
                 }
 
                 if (!lobby.isOwner(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cOnly the lobby owner can start the game!");
+                    sendMGCError(player, "Only the lobby owner can start the game!");
                     return true;
                 }
                 if (!(lobby.getReadyPlayers().size() == lobby.getPlayers().size())) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cNot everyone is ready! To continue, run /mg confirm.");
+                    sendMGCError(player, "Not everyone is ready! To continue, run /mg confirm.");
                     confirmations.put(player, lobby);
                     return true;
                 }
                 GameManager.startGame(lobby);
-                if (lobby.getPlayers().size() > 1) player.sendMessage("§8[§6MiniGameCore§8] §aStarting game: " + lobby.getLobbyId());
+                if (lobby.getPlayers().size() > 1) sendMGCInfo(player, "Starting game: " + lobby.getLobbyId());
                 break;
 
             case "spectate":
@@ -393,7 +399,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 if (LobbyManager.getLobbyByPlayer(player) != null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are already in a game! Type /mg leave to leave!");
+                    sendMGCError(player, "You are already in a game! Type /mg leave to leave!");
                     return true;
                 }
 
@@ -401,17 +407,17 @@ public final class MiniGameCommand implements CommandExecutor {
 
                 Player targetPlayer = Bukkit.getPlayer(target);
                 if (targetPlayer != null && targetPlayer.isOnline()) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §aYou are now spectating " + targetPlayer.getName() + ".");
+                    sendMGCInfo(player, "You are now spectating " + targetPlayer.getName() + ".");
                     player.teleport(targetPlayer);
                     player.setGameMode(GameMode.SPECTATOR);
                 } else {
                     lobby = lobbyManager.getLobby(target);
                     if (lobby != null) {
-                        player.sendMessage("§8[§6MiniGameCore§8] §aYou are now spectating the lobby of " + lobby.getOwner().getName() + ".");
+                        sendMGCInfo(player, "You are now spectating the lobby of " + lobby.getOwner().getName() + ".");
                         player.teleport(lobby.getOwner());
                         player.setGameMode(GameMode.SPECTATOR);
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§cNo player or lobby found with that name.");
+                        sendMGCError(player, "No player or lobby found with that name.");
                     }
                 }
                 break;
@@ -422,11 +428,11 @@ public final class MiniGameCommand implements CommandExecutor {
                     return true;
                 }
                 if (LobbyManager.getLobbyByPlayer(player) != null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are already in a game! Type /mg leave to leave!");
+                    sendMGCError(player, "You are already in a game! Type /mg leave to leave!");
                     return true;
                 }
 
-                player.sendMessage("§8[§6MiniGameCore§8] §aYou are not spectating the game anymore.");
+                sendMGCInfo(player, "You are not spectating the game anymore.");
                 World world = Bukkit.getWorld("world");
                 assert world != null;
                 player.teleport(world.getSpawnLocation());
@@ -468,22 +474,22 @@ public final class MiniGameCommand implements CommandExecutor {
             case "reload":
                 plugin.reloadConfig();
                 Stats.setup();
-                player.sendMessage("§8[§6MiniGameCore§8] §aPlugin reloaded!");
+                sendMGCInfo(player, "Plugin reloaded!");
                 break;
 
             case "stopall":
                 if (lobbyManager.getOpenLobbies() == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cNo active Lobbies.");
+                    sendMGCError(player, "No active Lobbies.");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cStopping all games!");
+                sendMGCError(player, "Stopping all games!");
                 for (Lobby lobby1 : lobbyManager.getOpenLobbies()) {
                     for (Player gamer : lobby1.getPlayers()) {
                         gamer.sendMessage("§8[§6MiniGameCore§8]§c Administrator stopped the game! Resetting...");
                     }
                     GameManager.endGame(lobby1, new Winner.Aborted());
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cStopped all games.");
+                sendMGCError(player, "Stopped all games.");
                 break;
 
             case "stop":
@@ -494,16 +500,16 @@ public final class MiniGameCommand implements CommandExecutor {
                 lobby = lobbyManager.getLobby(args[1]);
 
                 if (lobby == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cNo active Lobbies.");
+                    sendMGCError(player, "No active Lobbies.");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cStopping game: " + args[1]);
+                sendMGCError(player, "Stopping game: " + args[1]);
 
                 for (Player gamer : lobby.getPlayers()) {
                     gamer.sendMessage("§8[§6MiniGameCore§8]§c Administrator stopped the game! Resetting...");
                 }
                 GameManager.endGame(lobby, new Winner.Aborted());
-                player.sendMessage("§8[§6MiniGameCore§8] §cStopped game: " + args[1]);
+                sendMGCError(player, "Stopped game: " + args[1]);
                 break;
 
             case "ban":
@@ -511,7 +517,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     player.sendMessage("§cMissing Args! Usage: /mg ban <player>");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cBanning player: " + args[1]);
+                sendMGCError(player, "Banning player: " + args[1]);
                 plugin.banPlayer(Objects.requireNonNull(Bukkit.getPlayer(args[1])).getUniqueId());
                 if (args.length == 2) {
                     plugin.getLogger().info(player.getName() + " banned Player: " + args[1] + ".");
@@ -520,7 +526,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     String reason = String.join(" ", tempReason);
                     plugin.getLogger().info(player.getName() + " banned Player: " + args[1] + "with reason: " + reason);
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cBanned player: " + args[1]);
+                sendMGCError(player, "Banned player: " + args[1]);
                 break;
 
             case "unban":
@@ -528,14 +534,14 @@ public final class MiniGameCommand implements CommandExecutor {
                     player.sendMessage("§cMissing Args! Usage: /mg unban <player>");
                     return true;
                 }
-                player.sendMessage("§8[§6MiniGameCore§8] §cUnbanning player: " + args[1]);
+                sendMGCError(player, "Unbanning player: " + args[1]);
                 plugin.unbanPlayer(Objects.requireNonNull(Bukkit.getPlayer(args[1])).getUniqueId());
                 plugin.getLogger().info(player.getName() + " unbanned Player: " + args[1] + ".");
-                player.sendMessage("§8[§6MiniGameCore§8] §cUnbanned player: " + args[1]);
+                sendMGCError(player, "Unbanned player: " + args[1]);
                 break;
 
             case "version":
-                player.sendMessage("§8[§6MiniGameCore§8] §aVersion: " + plugin.getDescription().getVersion());
+                sendMGCInfo(player, "Version: " + plugin.getPluginMeta().getVersion());
                 break;
         }
 

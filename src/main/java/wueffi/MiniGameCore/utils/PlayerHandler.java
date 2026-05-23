@@ -27,6 +27,7 @@ public final class PlayerHandler implements Listener {
 
         if (lobby != null) {
             GameConfig config = GameManager.loadGameConfigFromWorld(lobby.getWorldFolder());
+            if (config == null) return;
             if (config.getTeams() > 0) {
                 Team team = lobby.getTeamByPlayer(player);
                 if (team != null) {

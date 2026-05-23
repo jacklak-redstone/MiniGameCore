@@ -77,6 +77,8 @@ public final class ScoreBoard {
             for (int i = 0; i < count; i++) {
                 Team currentTeam = lobby.getTeam(i);
 
+                if (currentTeam == null) return;
+
                 String youString;
                 if (currentTeam.containsPlayer(player)) youString = "§8(YOU)§7";
                 else youString = "";

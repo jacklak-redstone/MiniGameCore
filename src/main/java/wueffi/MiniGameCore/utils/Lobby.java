@@ -75,7 +75,7 @@ public final class Lobby {
     public Set<Player> getPlayers() {
         return players.stream()
                 .map(Bukkit::getPlayer)
-                .filter(p -> p != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 

@@ -1,5 +1,8 @@
 package wueffi.MiniGameCore;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,12 +27,22 @@ public final class MiniGameCore extends JavaPlugin {
     private List<String> availableGames;
     private List<UUID> bannedPlayers;
     private Boolean keepWorlds;
+    public static final Component prefix = Component.text()
+            .append(Component.text("[", NamedTextColor.GRAY))
+            .append(Component.text("MiniGameCore", NamedTextColor.GOLD))
+            .append(Component.text("]", NamedTextColor.GRAY))
+            .hoverEvent(HoverEvent.showText(
+                    Component.text("Made with ❤ by Waffle & others", NamedTextColor.GOLD)
+            ))
+            .build();
 
     @Override
     public void onEnable() {
         getLogger().info("MinigameCore enabled!");
         plugin = this;
         saveDefaultConfig();
+
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "Velocity");
 
         List<String> availableGames = getConfig().getStringList("available-games");
         List<UUID> bannedPlayers = new ArrayList<>();
@@ -142,6 +155,20 @@ public final class MiniGameCore extends JavaPlugin {
             return partyManager;
         }
         return partyManager;
+    }
+
+    public static void sendMGCInfo(Player player, String message) {
+        player.sendMessage(Component.text()
+                .append(prefix)
+                .append(Component.text(message, NamedTextColor.DARK_GREEN))
+                .build());
+    }
+
+    public static void sendMGCError(Player player, String message) {
+        player.sendMessage(Component.text()
+                .append(prefix)
+                .append(Component.text(message, NamedTextColor.RED))
+                .build());
     }
 
     public static MiniGameCore getPlugin() {

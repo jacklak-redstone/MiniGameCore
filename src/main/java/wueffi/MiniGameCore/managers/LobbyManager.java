@@ -22,8 +22,8 @@ public final class LobbyManager {
                 .orElse(null);
     }
 
-    public boolean removeLobby(String lobbyId) {
-        return lobbies.remove(lobbyId) != null;
+    public void removeLobby(String lobbyId) {
+        lobbies.remove(lobbyId);
     }
 
     public Lobby createLobby(String gameName, int maxPlayers, Player owner, File newWorldFolder) {

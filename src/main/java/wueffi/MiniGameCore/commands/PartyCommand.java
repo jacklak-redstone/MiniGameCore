@@ -15,6 +15,9 @@ import wueffi.MiniGameCore.managers.PartyManager;
 import wueffi.MiniGameCore.utils.*;
 import java.util.HashMap;
 
+import static wueffi.MiniGameCore.MiniGameCore.sendMGCError;
+import static wueffi.MiniGameCore.MiniGameCore.sendMGCInfo;
+
 public final class PartyCommand implements CommandExecutor {
     private final MiniGameCore plugin;
     private static final HashMap<String, String> commandsPermissions = new HashMap<>();
@@ -78,12 +81,12 @@ public final class PartyCommand implements CommandExecutor {
                     return true;
                 }
                 if (PartyManager.getPartyByPlayer(player) != null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are already in another party!");
+                    sendMGCError(player, "You are already in another party!");
                     return true;
                 }
                 String partyName = args[1];
                 party = partyManager.createParty(partyName, player);
-                player.sendMessage("§8[§6MiniGameCore§8]§a You created the party: " + party.getPartyName());
+                sendMGCInfo(player, " You created the party: " + party.getPartyName());
                 break;
             case "leave":
                 if (args.length != 1) {
@@ -96,39 +99,39 @@ public final class PartyCommand implements CommandExecutor {
                 }
                 party = PartyManager.getPartyByPlayer(player);
                 if (party == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are in no party!");
+                    sendMGCError(player, "You are in no party!");
                     return true;
                 }
                 if (party.getPlayers().size() == 1) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§a You were the last player, deleting party...");
+                    sendMGCInfo(player, " You were the last player, deleting party...");
                     if (party.removePlayer(player)) {
-                        player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
-                        if (!partyManager.removeParty(party.getPartyId())) player.sendMessage("§8[§6MiniGameCore§8]§c Could not remove party: " + party.getPartyName());
+                        sendMGCInfo(player, " You left the party: " + party.getPartyName());
+                        if (!partyManager.removeParty(party.getPartyId())) sendMGCError(player, " Could not remove party: " + party.getPartyName());
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
+                        sendMGCError(player, " Could not leave party: " + party.getPartyName());
                     }
                     return true;
                 }
                 if (party.isOwner(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§a You were the owner, deleting party...");
+                    sendMGCInfo(player, " You were the owner, deleting party...");
                     if (party.removePlayer(player)) {
-                        player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
+                        sendMGCInfo(player, " You left the party: " + party.getPartyName());
                         for (Player player1 : party.getPlayers()) {
                             player1.sendMessage("§8[§6MiniGameCore§8]§a Owner §7 " + player.getName() + "§a has left the party!");
                         }
-                        if (!partyManager.removeParty(party.getPartyId())) player.sendMessage("§8[§6MiniGameCore§8]§c Could not remove party: " + party.getPartyName());
+                        if (!partyManager.removeParty(party.getPartyId())) sendMGCError(player, " Could not remove party: " + party.getPartyName());
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
+                        sendMGCError(player, " Could not leave party: " + party.getPartyName());
                     }
                     return true;
                 }
                 if (party.removePlayer(player)) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§a You left the party: " + party.getPartyName());
+                    sendMGCInfo(player, " You left the party: " + party.getPartyName());
                     for (Player player1 : party.getPlayers()) {
                         player1.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has left the party! (" + party.getPlayers().size() + " Members)");
                     }
                 } else {
-                    player.sendMessage("§8[§6MiniGameCore§8]§c Could not leave party: " + party.getPartyName());
+                    sendMGCError(player, " Could not leave party: " + party.getPartyName());
                 }
                 break;
             case "join":
@@ -146,12 +149,12 @@ public final class PartyCommand implements CommandExecutor {
                 }
                 target = Bukkit.getPlayer(args[1]);
                 if (target == null || !target.isOnline()) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§c Inviter is not online!");
+                    sendMGCError(player, " Inviter is not online!");
                     return true;
                 }
                 party = PartyManager.getPartyByPlayer(target);
                 if (party == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cInviter is not in a party!");
+                    sendMGCError(player, "Inviter is not in a party!");
                     return true;
                 }
                 if (party.isInvited(player)) {
@@ -159,13 +162,13 @@ public final class PartyCommand implements CommandExecutor {
                         player1.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has joined the party! (" + party.getPlayers().size() + " Members)");
                     }
                     if (party.addPlayer(player)) {
-                        player.sendMessage("§8[§6MiniGameCore§8]§a You joined the party: " + party.getPartyName());
+                        sendMGCInfo(player, " You joined the party: " + party.getPartyName());
                     } else {
-                        player.sendMessage("§8[§6MiniGameCore§8]§a Could not join " + party.getPartyName() + ".");
+                        sendMGCInfo(player, " Could not join " + party.getPartyName() + ".");
                     }
                     return true;
                 } else {
-                    player.sendMessage("§8[§6MiniGameCore§8]§a You were not invited to " + party.getPartyName() + ".");
+                    sendMGCInfo(player, " You were not invited to " + party.getPartyName() + ".");
                 }
                 break;
             case "invite":
@@ -179,12 +182,12 @@ public final class PartyCommand implements CommandExecutor {
                 }
                 target = Bukkit.getPlayer(args[1]);
                 if (target == null || !target.isOnline()) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§c Player is not online!");
+                    sendMGCError(player, " Player is not online!");
                     return true;
                 }
                 party = PartyManager.getPartyByPlayer(player);
                 if (party == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are not in a party!");
+                    sendMGCError(player, "You are not in a party!");
                     return true;
                 }
                 if (party.invitePlayer(target)) {
@@ -195,9 +198,9 @@ public final class PartyCommand implements CommandExecutor {
                     Component deny = Component.text("[DENY]", NamedTextColor.RED).clickEvent(ClickEvent.runCommand("/party deny " + player.getName())).hoverEvent(HoverEvent.showText(Component.text("Click to deny invitation")));
 
                     target.sendMessage(Component.text("             ").append(accept).append(Component.text("           ")).append(deny));
-                    player.sendMessage("§8[§6MiniGameCore§8] §aYou invited " + args[1] + "!");
+                    sendMGCInfo(player, "You invited " + args[1] + "!");
                 } else {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cCould not invite " + args[1]);
+                    sendMGCError(player, "Could not invite " + args[1]);
                 }
                 break;
             case "deny":
@@ -211,23 +214,23 @@ public final class PartyCommand implements CommandExecutor {
                 }
                 target = Bukkit.getPlayer(args[1]);
                 if (target == null || !target.isOnline()) {
-                    player.sendMessage("§8[§6MiniGameCore§8]§c Player is not online!");
+                    sendMGCError(player, " Player is not online!");
                     return true;
                 }
                 party = PartyManager.getPartyByPlayer(target);
                 if (party == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cInviter is not in a party!");
+                    sendMGCError(player, "Inviter is not in a party!");
                     return true;
                 }
                 if (party.isInvited(player)) {
                     if (!party.denyInvite(player)) {
-                        player.sendMessage("§8[§6MiniGameCore§8]§a Could not deny " + party.getPartyName() + ".");
+                        sendMGCInfo(player, " Could not deny " + party.getPartyName() + ".");
                     } else {
                         target.sendMessage("§8[§6MiniGameCore§8]§7 " + player.getName() + "§a has denied your invitation.");
                     }
                     return true;
                 } else {
-                    player.sendMessage("§8[§6MiniGameCore§8]§a You were not invited to " + party.getPartyName() + ".");
+                    sendMGCInfo(player, " You were not invited to " + party.getPartyName() + ".");
                 }
                 break;
             case "list":
@@ -241,7 +244,7 @@ public final class PartyCommand implements CommandExecutor {
                 }
                 party = PartyManager.getPartyByPlayer(player);
                 if (party == null) {
-                    player.sendMessage("§8[§6MiniGameCore§8] §cYou are not in a party!");
+                    sendMGCError(player, "You are not in a party!");
                     return true;
                 }
                 player.sendMessage("§8[§6MiniGameCore§8]§3 Party Members:");
@@ -251,7 +254,7 @@ public final class PartyCommand implements CommandExecutor {
                 break;
 
             default:
-                player.sendMessage("§8[§6MiniGameCore§8] §cUnknown subcommand!");
+                sendMGCError(player, "Unknown subcommand!");
                 break;
         }
 

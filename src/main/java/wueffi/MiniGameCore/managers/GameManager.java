@@ -1,6 +1,12 @@
 package wueffi.MiniGameCore.managers;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -32,6 +38,7 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.util.*;
 
+import static wueffi.MiniGameCore.MiniGameCore.*;
 import static wueffi.MiniGameCore.utils.PlayerHandler.PlayerSoftReset;
 
 public final class GameManager implements Listener {
@@ -52,7 +59,17 @@ public final class GameManager implements Listener {
     }
 
     public static void startGame(Lobby lobby) {
-        int minPlayers = loadGameConfigFromWorld(lobby.getWorldFolder()).getMinPlayers();
+        final GameConfig config = loadGameConfigFromWorld(lobby.getWorldFolder());
+
+        if (config == null) {
+            for (Player player : lobby.getPlayers()) {
+                sendMGCError(player, " the game's config could not be loaded! Resetting...!");
+            }
+            LobbyHandler.LobbyReset(lobby);
+            return;
+        }
+
+        int minPlayers = config.getMinPlayers();
 
         if (lobby.getPlayers().size() < minPlayers) {
                 lobby.getOwner().sendMessage("§8[§6MiniGameCore§8]§c Not enough players to start Game! (required: " + minPlayers + ")");
@@ -60,7 +77,7 @@ public final class GameManager implements Listener {
         }
 
         for (Player player : lobby.getPlayers()) {
-            player.sendMessage("§8[§6MiniGameCore§8]§a " + lobby.getGameName() + " is starting!");
+            sendMGCInfo(player, " " + lobby.getGameName() + " is starting!");
             lastHit.remove(player.getUniqueId()); // just to make sure
             frozenPlayers.add(player);
             PlayerSoftReset(player);
@@ -71,7 +88,7 @@ public final class GameManager implements Listener {
 
         if (gameStartEvent.isCancelled()) {
             for (Player player : lobby.getPlayers()) {
-                player.sendMessage("§8[§6MiniGameCore§8]§c Game start was cancelled!");
+                sendMGCError(player, " Game start was cancelled!");
             }
             return;
         }
@@ -98,7 +115,7 @@ public final class GameManager implements Listener {
                     if (team.equals(winnerTeam)) {
                         for (Player teamPlayer : team.getPlayers()) {
                             Stats.win(lobby.getGameName(), teamPlayer);
-                            teamPlayer.sendTitle("§6Your Team", "won the Game!", 10, 70, 20);
+                            showTitle(teamPlayer, "§6Your Team", "won the Game!", 10, 70, 20);
                             teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                             lastHit.remove(teamPlayer.getUniqueId());
                             playerRespawnPoints.remove(teamPlayer.getUniqueId());
@@ -107,7 +124,7 @@ public final class GameManager implements Listener {
                     } else {
                         for (Player teamPlayer : team.getPlayers()) {
                             Stats.lose(lobby.getGameName(), teamPlayer);
-                            teamPlayer.sendTitle("§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
+                            showTitle(teamPlayer, "§6The " + winnerTeam.getColorCode() + winnerTeam.getColor() + " §6Team", "won the Game!", 10, 70, 20);
                             teamPlayer.playSound(teamPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
                             lastHit.remove(teamPlayer.getUniqueId());
                             playerRespawnPoints.remove(teamPlayer.getUniqueId());
@@ -252,15 +269,19 @@ public final class GameManager implements Listener {
     }
 
     public static Lobby hostGame(String gameName, Player player) {
-        String originalWorldName = gameName + "_world";
-        String newWorldName = gameName + "_copy_" + System.currentTimeMillis();
+        File miniGamesFolder = new File("plugins/MiniGameCore/MiniGames");
 
-        File originalWorldFolder = new File("plugins/MiniGameCore/MiniGames", originalWorldName);
-        if (!originalWorldFolder.exists()) {
-            plugin.getLogger().warning("Template world " + originalWorldName + " not found in" + originalWorldFolder.getAbsolutePath() + ".");
+        File[] matchingWorlds = miniGamesFolder.listFiles(f ->
+                f.isDirectory() && (f.getName().equals(gameName + "_world") || f.getName().matches(gameName + "_world\\d+"))
+        );
+
+        if (matchingWorlds == null || matchingWorlds.length == 0) {
+            plugin.getLogger().warning("No template worlds found for game: " + gameName);
             return null;
         }
 
+        File originalWorldFolder = matchingWorlds[new Random().nextInt(matchingWorlds.length)];
+        String newWorldName = gameName + "_copy_" + System.currentTimeMillis();
         File newWorldFolder = new File(Bukkit.getWorldContainer(), newWorldName);
 
         if (originalWorldFolder.exists()) {
@@ -272,7 +293,7 @@ public final class GameManager implements Listener {
             }
             plugin.getLogger().info("World copied successfully.");
         } else {
-            plugin.getLogger().warning("World folder " + originalWorldName + " not found.");
+            plugin.getLogger().warning("World folder not found for game: " + gameName);
             return null;
         }
 
@@ -291,22 +312,51 @@ public final class GameManager implements Listener {
         plugin.getLogger().info("Copied and loaded world: " + newWorldName);
 
         if (LobbyManager.getLobbyByPlayer(player) != null) {
-            player.sendMessage("§8[§6MiniGameCore§8]§c You are already in a game or lobby!");
+            sendMGCError(player, " You are already in a game or lobby!");
             return null;
         }
 
         GameConfig gameConfig = loadGameConfigFromWorld(newWorldFolder);
+        if (gameConfig == null) {
+            sendMGCError(player, " Game config could not be loaded!");
+            return null;
+        }
         int maxPlayers = gameConfig.getMaxPlayers();
 
         Lobby lobby = lobbyManager.createLobby(gameName, maxPlayers, player, newWorldFolder);
 
         if (lobby == null) {
-            player.sendMessage("§8[§6MiniGameCore§8]§c Lobby could not be created!");
+            sendMGCError(player, " Lobby could not be created!");
             return null;
         }
 
-        Bukkit.broadcast("§8[§6MiniGameCore§8]§a " + player.getName() + " is hosting " + lobby.getGameName() + "! " +
-                lobby.getPlayers().size() + "/" + maxPlayers + " players - type /mg join " + lobby.getLobbyId() + " to join the fun!", gameConfig.getJoinPerm());
+        Component message = Component.empty()
+                .append(prefix)
+                .append(Component.text(player.getName() + " is hosting " + lobby.getGameName() + "! ", NamedTextColor.DARK_GREEN))
+                .append(Component.text(lobby.getPlayers().size() + "/" + maxPlayers + " players").color(NamedTextColor.GREEN))
+                .append(Component.text(" - ", NamedTextColor.GRAY))
+                .append(Component.text("Click or type /mg join " + lobby.getLobbyId() + " to join the fun!")
+                        .color(NamedTextColor.DARK_GREEN)
+                        .clickEvent(ClickEvent.runCommand("/mg join " + lobby.getLobbyId()))
+                        .hoverEvent(HoverEvent.showText(Component.text("Click to join " + lobby.getGameName(), NamedTextColor.GREEN)))
+                );
+
+        Bukkit.getOnlinePlayers().stream()
+                .filter(p -> p.hasPermission(gameConfig.getJoinPerm()))
+                .forEach(p -> p.sendMessage(message));
+
+        // Velocity Broadcast HEHEHEHE
+        String serialized = LegacyComponentSerializer.legacySection().serialize(message);
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Message");
+        out.writeUTF("ALL");
+        out.writeUTF(serialized);
+
+        Bukkit.getOnlinePlayers().stream()
+                .findFirst()
+                .ifPresent(carrier ->
+                        carrier.sendPluginMessage(plugin, "Velocity", out.toByteArray())
+                );
 
         if (lobby.isFull()) {
             startGame(lobby);
@@ -384,7 +434,7 @@ public final class GameManager implements Listener {
         frozenPlayers.clear();
     }
 
-    private static void showTitle(Player player, String title, String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    public static void showTitle(Player player, String title, String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         Component mainTitle = Component.text(title);
         Component subTitle = Component.text(subtitle);
 
@@ -413,7 +463,7 @@ public final class GameManager implements Listener {
         GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to break this block!");
+            sendMGCError(player, " You are not allowed to break this block!");
             event.setCancelled(true);
         }
     }
@@ -499,7 +549,7 @@ public final class GameManager implements Listener {
                     Team team = lobby.getTeamByPlayer(player);
                     if (team == null) return;
                     team.decreaseAlive();
-                    player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
+                    sendMGCError(player, " You died! §aYou are now spectating.");
 
                     int aliveTeams = 0;
                     Team lastAliveTeam = null;
@@ -515,7 +565,7 @@ public final class GameManager implements Listener {
                     }
                 } else {
                     if (!config.getRespawnMode()) {
-                        player.sendMessage("§8[§6MiniGameCore§8]§c You died! §aYou are now spectating.");
+                        sendMGCError(player, " You died! §aYou are now spectating.");
 
                         if (alive != null && alive.size() == 1) {
                             Player winner = alive.getFirst();
@@ -566,7 +616,7 @@ public final class GameManager implements Listener {
         GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            player.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to place this block!");
+            sendMGCError(player, " You are not allowed to place this block!");
             event.setCancelled(true);
         }
     }
@@ -618,7 +668,7 @@ public final class GameManager implements Listener {
             return;
         }
 
-        if (!config.getAllowFriendlyFire() && config.getTeams() > 0 && lobby.getTeamByPlayer(damager).equals(lobby.getTeamByPlayer(damaged))) {
+        if (!config.getAllowFriendlyFire() && config.getTeams() > 0 && Objects.equals(lobby.getTeamByPlayer(damager), lobby.getTeamByPlayer(damaged))) {
             event.setCancelled(true);
             assert damager != null;
             damager.sendMessage("§8[§6MiniGameCore§8]§c Friendly fire is not enabled for this minigame");
@@ -650,7 +700,7 @@ public final class GameManager implements Listener {
             return;
         }
 
-        player.sendMessage("§8[§6MiniGameCore§8]§c You can't open Containers yet!");
+        sendMGCError(player, " You can't open Containers yet!");
         event.setCancelled(true);
     }
 
