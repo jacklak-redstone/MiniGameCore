@@ -122,7 +122,7 @@ public final class MiniGameCommand implements CommandExecutor {
                             return true;
                         }
                         if (party.getPlayers().size() > config.getMaxPlayers()) {
-                            sendMGCError(player, " Party too big for game!");
+                            sendMGCError(player, "Party too big for game!");
                             return true;
                         }
                         lobby = GameManager.hostGame(gameName, player);
@@ -155,13 +155,13 @@ public final class MiniGameCommand implements CommandExecutor {
                             showTitle(player,"", "If you are ready use §a/mg ready §fto ready-up!", 0, 40, 5);
                         }
                     } else {
-                        sendMGCError(player, " You are in a party!");
+                        sendMGCError(player, "You are in a party!");
                         return true;
                     }
                 } else {
                     lobby = GameManager.hostGame(gameName, player); // again, it handled the message for us
                 }
-                sendMGCInfo(player, " Hosting game: " + args[1]);
+                sendMGCInfo(player, "Hosting game: " + args[1]);
                 ScoreBoardManager.setPlayerStatus(player, "WAITING");
                 if (lobby == null) break;
                 lobby.setLobbyState("WAITING");
@@ -205,7 +205,7 @@ public final class MiniGameCommand implements CommandExecutor {
                 if (party != null) {
                     if (party.isOwner(player)) {
                         if (party.getPlayers().size() + lobby.getMaxPlayers() > lobby.getMaxPlayers()) {
-                            sendMGCError(player, " Party too big for game!");
+                            sendMGCError(player, "Party too big for game!");
                             return true;
                         }
                         World world = Bukkit.getWorld(lobby.getWorldFolder().getName());
@@ -235,7 +235,7 @@ public final class MiniGameCommand implements CommandExecutor {
                             return true;
                         }
                     } else {
-                        sendMGCError(player, " You are in a party!");
+                        sendMGCError(player, "You are in a party!");
                         return true;
                     }
                 }
