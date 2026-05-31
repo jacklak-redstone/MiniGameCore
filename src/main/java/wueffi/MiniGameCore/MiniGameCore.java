@@ -30,7 +30,7 @@ public final class MiniGameCore extends JavaPlugin {
     public static final Component prefix = Component.text()
             .append(Component.text("[", NamedTextColor.GRAY))
             .append(Component.text("MiniGameCore", NamedTextColor.GOLD))
-            .append(Component.text("]", NamedTextColor.GRAY))
+            .append(Component.text("] ", NamedTextColor.GRAY))
             .hoverEvent(HoverEvent.showText(
                     Component.text("Made with ❤ by Waffle & others", NamedTextColor.GOLD)
             ))

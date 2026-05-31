@@ -86,7 +86,7 @@ public final class GameManager implements Listener {
 
         if (config == null) {
             for (Player player : lobby.getPlayers()) {
-                sendMGCError(player, " the game's config could not be loaded! Resetting...!");
+                sendMGCError(player, "the game's config could not be loaded! Resetting...!");
             }
             LobbyHandler.LobbyReset(lobby);
             return;
@@ -100,7 +100,7 @@ public final class GameManager implements Listener {
         }
 
         for (Player player : lobby.getPlayers()) {
-            sendMGCInfo(player, " " + lobby.getGameName() + " is starting!");
+            sendMGCInfo(player, lobby.getGameName() + " is starting!");
             lastHit.remove(player.getUniqueId()); // just to make sure
             frozenPlayers.add(player);
             PlayerSoftReset(player);
@@ -111,7 +111,7 @@ public final class GameManager implements Listener {
 
         if (gameStartEvent.isCancelled()) {
             for (Player player : lobby.getPlayers()) {
-                sendMGCError(player, " Game start was cancelled!");
+                sendMGCError(player, "Game start was cancelled!");
             }
             return;
         }
@@ -336,13 +336,13 @@ public final class GameManager implements Listener {
         plugin.getLogger().info("Copied and loaded world: " + newWorldName);
 
         if (LobbyManager.getLobbyByPlayer(player) != null) {
-            sendMGCError(player, " You are already in a game or lobby!");
+            sendMGCError(player, "You are already in a game or lobby!");
             return null;
         }
 
         GameConfig gameConfig = loadGameConfigFromWorld(newWorldFolder);
         if (gameConfig == null) {
-            sendMGCError(player, " Game config could not be loaded!");
+            sendMGCError(player, "Game config could not be loaded!");
             return null;
         }
 
@@ -353,7 +353,7 @@ public final class GameManager implements Listener {
         Lobby lobby = lobbyManager.createLobby(gameName, maxPlayers, player, newWorldFolder);
 
         if (lobby == null) {
-            sendMGCError(player, " Lobby could not be created!");
+            sendMGCError(player, "Lobby could not be created!");
             return null;
         }
 
@@ -580,7 +580,7 @@ public final class GameManager implements Listener {
                     Team team = lobby.getTeamByPlayer(player);
                     if (team == null) return;
                     team.decreaseAlive();
-                    sendMGCError(player, " You died! §aYou are now spectating.");
+                    sendMGCError(player, "You died! §aYou are now spectating.");
 
                     int aliveTeams = 0;
                     Team lastAliveTeam = null;
@@ -596,7 +596,7 @@ public final class GameManager implements Listener {
                     }
                 } else {
                     if (!config.getRespawnMode()) {
-                        sendMGCError(player, " You died! §aYou are now spectating.");
+                        sendMGCError(player, "You died! §aYou are now spectating.");
 
                         if (alive != null && alive.size() == 1) {
                             Player winner = alive.getFirst();
@@ -647,7 +647,7 @@ public final class GameManager implements Listener {
         GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            if (config.getVerbose()) sendMGCError(player, " You are not allowed to place this block!");
+            if (config.getVerbose()) sendMGCError(player, "You are not allowed to place this block!");
             event.setCancelled(true);
         }
     }
@@ -729,8 +729,7 @@ public final class GameManager implements Listener {
         if (event.getInventory().getType().equals(InventoryType.PLAYER)) {
             return;
         }
-
-        if (config.getVerbose()) sendMGCError(player, " You can't open Containers yet!");
+        if (config.getVerbose()) sendMGCError(player, "You can't open Containers yet!");
         event.setCancelled(true);
     }
 
