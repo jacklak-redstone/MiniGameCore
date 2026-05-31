@@ -48,8 +48,6 @@ public final class Stats {
             statsConfig.set(base + ".played", 0);
             statsConfig.set(base + ".won", 0);
             statsConfig.set(base + ".lost", 0);
-        }
-        if (!statsConfig.contains(base + ".tied")) { // Tied games are not standard yet, remove this extra check and make it normal when they are
             statsConfig.set(base + ".tied", 0);
         }
     }
