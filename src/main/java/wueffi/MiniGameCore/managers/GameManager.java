@@ -488,6 +488,7 @@ public final class GameManager implements Listener {
             return;
         }
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (!config.allowedBreakBlocksExist()) {
             event.setCancelled(false);
@@ -495,7 +496,7 @@ public final class GameManager implements Listener {
         }
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            sendMGCError(player, " You are not allowed to break this block!");
+            sendMGCError(player, "You are not allowed to break this block!");
             event.setCancelled(true);
         }
     }
@@ -534,6 +535,7 @@ public final class GameManager implements Listener {
             player.setGameMode(GameMode.SPECTATOR);
 
             GameConfig config = getConfig(lobby);
+            if (config == null) return;
 
             Player killer = null;
             UUID uuid = lastHit.remove(player.getUniqueId());
@@ -649,6 +651,7 @@ public final class GameManager implements Listener {
             return;
         }
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (!config.allowedPlaceBlocksExist()) {
             event.setCancelled(false);
@@ -671,6 +674,8 @@ public final class GameManager implements Listener {
         }
 
         GameConfig config = getConfig(lobby);
+
+        if (config == null) return;
 
         if (!config.getDurabilityMode()) {
             event.setCancelled(true);
@@ -728,6 +733,7 @@ public final class GameManager implements Listener {
             return;
         }
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (lobby.getLobbyState().equals("GAME")) {
             return;
@@ -751,6 +757,7 @@ public final class GameManager implements Listener {
         if (lobby == null) return;
         DamageCause damageCause = event.getCause();
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (config.getBlockedDamageCauses().contains(damageCause)) {
             event.setCancelled(true);
@@ -764,6 +771,7 @@ public final class GameManager implements Listener {
 
         if (lobby == null) return;
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (!config.getAllowCrafting()) {
             player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");
@@ -777,6 +785,7 @@ public final class GameManager implements Listener {
         Lobby lobby = LobbyManager.getLobbyByPlayer(player);
         if (lobby == null) return;
         GameConfig config = getConfig(lobby);
+        if (config == null) return;
 
         if (config.getDoHunger()) return;
 
