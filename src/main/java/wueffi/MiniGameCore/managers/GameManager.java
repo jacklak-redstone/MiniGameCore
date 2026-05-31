@@ -495,7 +495,7 @@ public final class GameManager implements Listener {
         }
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            if (config.getVerbose()) sendMGCError(player, " You are not allowed to break this block!");
+            sendMGCError(player, " You are not allowed to break this block!");
             event.setCancelled(true);
         }
     }
@@ -656,7 +656,7 @@ public final class GameManager implements Listener {
         }
 
         if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            if (config.getVerbose()) sendMGCError(player, "You are not allowed to place this block!");
+            sendMGCError(player, "You are not allowed to place this block!");
             event.setCancelled(true);
         }
     }
@@ -696,7 +696,7 @@ public final class GameManager implements Listener {
 
         if (Objects.equals(lobby.getLobbyState(), "WAITING")) {
             assert damager != null;
-            if (config.getVerbose()) damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
+            damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP (yet)");
             event.setCancelled(true);
             return;
         }
@@ -704,14 +704,14 @@ public final class GameManager implements Listener {
         if (!config.getPVPMode() && Objects.equals(lobby.getLobbyState(), "GAME")) {
             event.setCancelled(true);
             assert damager != null;
-            if (config.getVerbose()) damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
+            damager.sendMessage("§8[§6MiniGameCore§8]§c You are not allowed to PVP");
             return;
         }
 
         if (!config.getAllowFriendlyFire() && config.getTeams() > 0 && Objects.equals(lobby.getTeamByPlayer(damager), lobby.getTeamByPlayer(damaged))) {
             event.setCancelled(true);
             assert damager != null;
-            if (config.getVerbose()) damager.sendMessage("§8[§6MiniGameCore§8]§c Friendly fire is not enabled for this minigame");
+            damager.sendMessage("§8[§6MiniGameCore§8]§c Friendly fire is not enabled for this minigame");
             return;
         }
 
@@ -738,7 +738,7 @@ public final class GameManager implements Listener {
         if (event.getInventory().getType().equals(InventoryType.PLAYER)) {
             return;
         }
-        if (config.getVerbose()) sendMGCError(player, "You can't open Containers yet!");
+        sendMGCError(player, "You can't open Containers yet!");
         event.setCancelled(true);
     }
 
@@ -766,7 +766,7 @@ public final class GameManager implements Listener {
         GameConfig config = getConfig(lobby);
 
         if (!config.getAllowCrafting()) {
-            if (config.getVerbose()) player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");
+            player.sendMessage("§7[§6MiniGameCore§7]§c You are not allowed to craft!");
             event.setCancelled(true);
         }
     }
