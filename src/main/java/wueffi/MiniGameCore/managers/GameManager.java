@@ -464,7 +464,7 @@ public final class GameManager implements Listener {
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
             // TODO: If the message has been sent, maybe don't send another one for the same block for 5-10 seconds?
-            sendMGCError(player, " You are not allowed to break this block!");
+            sendMGCError(player, "You are not allowed to break this block!");
             event.setCancelled(true);
         }
     }
