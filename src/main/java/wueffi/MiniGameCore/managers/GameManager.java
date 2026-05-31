@@ -284,7 +284,7 @@ public final class GameManager implements Listener {
         if (configFile.exists()) {
             return new GameConfig(configFile);
         } else {
-            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName() + ", this may cause NPEs.");
+            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName() + ", this may cause Null-Pointer-Exceptions or other unwanted behaviour.");
             return null;
         }
     }
