@@ -489,6 +489,11 @@ public final class GameManager implements Listener {
         }
         GameConfig config = getConfig(lobby);
 
+        if (!config.allowedBreakBlocksExist()) {
+            event.setCancelled(false);
+            return;
+        }
+
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
             if (config.getVerbose()) sendMGCError(player, " You are not allowed to break this block!");
             event.setCancelled(true);
@@ -643,8 +648,12 @@ public final class GameManager implements Listener {
             event.setCancelled(false);
             return;
         }
-
         GameConfig config = getConfig(lobby);
+
+        if (!config.allowedPlaceBlocksExist()) {
+            event.setCancelled(false);
+            return;
+        }
 
         if (!config.getAllowedPlaceBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
             if (config.getVerbose()) sendMGCError(player, "You are not allowed to place this block!");

@@ -67,32 +67,31 @@ The Folder for Gameworlds and configs is `./MiniGameCore`. Every Game World shou
 
 All available options: 
 
-| Field                    | Description                                                       | Required / Default          |
-|--------------------------|-------------------------------------------------------------------|-----------------------------|
-| `name`                   | Display name of the game, e.g. in the scoreboard or at `/mg host` | ✅ Yes                       |
-| `maxPlayers`             | Maximum number of players for this game instance                  | ✅ Yes                       |
-| `teams`                  | Maximum number of teams (0 for no teams, 2-8 teams possible)      | ❌ No (default: 0)           |
-| `minPlayers`             | Minimum number of players for this game                           | ❌ No (default: 2)           |
-| `spawnPoints`            | Default spawn points for players without a team                   | ✅ Depends                   |
-| `teamSpawnPoints`        | Spawn points per team (e.g. `0: [...]`, `1: [...]`)               | ✅ Depends                   |
-| `inventory`              | Starting items at game start (e.g. `["WOODEN_SHOVEL"]`)           | ❌ No                        |
-| `allowed_break_blocks`   | Which blocks can be broken (e.g. `["SNOW_BLOCK"]`)                | ❌ No                        |
-| `allowed_place_blocks`   | Which blocks can be placed (e.g. `["OAK_PLANKS"]`)                | ❌ No                        |
-| `respawnMode`            | Control of respawn behavior: `"true"` or `"false"`                | ❌ No (default: false)       |
-| `respawnDelay`           | Seconds delay until respawn (if enabled)                          | ❌ No (default: 0)           |
-| `doDurability`           | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true)        |
-| `allowPVP`               | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true)        |
-| `blocked_damage_causes`  | Stop these damage causes from happening                           | ❌ No                        |
-| `timeLimit`              | Stops a game after X seconds have passed                          | ❌ No (default: 600)         |
-| `allowFriendlyFire`      | Allow members of the same team to attack each other               | ❌ No (default: false)       |
-| `allowCrafting`          | Allows Players to craft items during the game                     | ❌ No (default: false)       |
-| `silenceDeathMessages`   | Whether or not to silence death messages                          | ❌ No (default: false)       |
-| `hostPerm`               | Only players with this permission may host this game              | ❌ No (default: mgcore.host) |
-| `joinPerm`               | Only players with this permission may join this game              | ❌ No (default: mgcore.join) |   
-| `doHunger`               | Whether players' hunger bars should deplete                       | ❌ No (default: false)       |
-| `allowOpeningContainers` | Allows players to open containers before the game starts          | ❌ No (default: false)       |
-| `gameMode`               | The gamemode to spawn players into once the game starts           | ❌ No (default: SURVIVAL)    |
-| `verbose`                | Send a message when a player tries do something they can't        | ❌ No (default: false)       |
+| Field                    | Description                                                       | Required / Default                         |
+|--------------------------|-------------------------------------------------------------------|--------------------------------------------|
+| `name`                   | Display name of the game, e.g. in the scoreboard or at `/mg host` | ✅ Yes                                      |
+| `maxPlayers`             | Maximum number of players for this game instance                  | ✅ Yes                                      |
+| `teams`                  | Maximum number of teams (0 for no teams, 2-8 teams possible)      | ❌ No (default: 0)                          |
+| `minPlayers`             | Minimum number of players for this game                           | ❌ No (default: 2)                          |
+| `spawnPoints`            | Default spawn points for players without a team                   | ✅ Depends                                  |
+| `teamSpawnPoints`        | Spawn points per team (e.g. `0: [...]`, `1: [...]`)               | ✅ Depends                                  |
+| `inventory`              | Starting items at game start (e.g. `["WOODEN_SHOVEL"]`)           | ❌ No                                       |
+| `allowedBreakBlocks`     | Which blocks can be broken (e.g. `["SNOW_BLOCK"]`)                | ❌ No (All blocks can be broken by default) |
+| `allowedPlaceBlocks`     | Which blocks can be placed (e.g. `["OAK_PLANKS"]`)                | ❌ No (All blocks can be placed by default) |
+| `respawnMode`            | Control of respawn behavior: `"true"` or `"false"`                | ❌ No (default: false)                      |
+| `respawnDelay`           | Seconds delay until respawn (if enabled)                          | ❌ No (default: 0)                          |
+| `doDurability`           | Control ItemDamage: `true` (vanilla) or `false`                   | ❌ No (default: true)                       |
+| `allowPVP`               | Allow PVP: `true` (vanilla) or `false`                            | ❌ No (default: true)                       |
+| `blockedDamageCauses`    | Stop these damage causes from happening                           | ❌ No                                       |
+| `timeLimit`              | Stops a game after X seconds have passed                          | ❌ No (default: 600)                        |
+| `allowFriendlyFire`      | Allow members of the same team to attack each other               | ❌ No (default: false)                      |
+| `allowCrafting`          | Allows Players to craft items during the game                     | ❌ No (default: false)                      |
+| `silenceDeathMessages`   | Whether or not to silence death messages                          | ❌ No (default: false)                      |
+| `hostPerm`               | Only players with this permission may host this game              | ❌ No (default: mgcore.host)                |
+| `joinPerm`               | Only players with this permission may join this game              | ❌ No (default: mgcore.join)                |   
+| `doHunger`               | Whether players' hunger bars should deplete                       | ❌ No (default: false)                      |
+| `allowOpeningContainers` | Allows players to open containers before the game starts          | ❌ No (default: false)                      |
+| `gameMode`               | The game mode players spawn in when the game starts               | ❌ No (default: SURVIVAL)                   |
 
 Example config for an 8 player Spleef-Game:
 ```

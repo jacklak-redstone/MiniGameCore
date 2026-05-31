@@ -38,7 +38,8 @@ public final class GameConfig {
     private final boolean silenceDeathMessages;
     private final boolean doHunger;
     private final boolean allowOpeningContainers;
-    private final boolean verbose;
+    private final boolean allowedBreakBlocksExist;
+    private final boolean allowedPlaceBlocksExist;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -60,7 +61,6 @@ public final class GameConfig {
         this.silenceDeathMessages = config.getBoolean("game.silenceDeathMessages", false);
         this.doHunger = config.getBoolean("game.doHunger", false);
         this.allowOpeningContainers = config.getBoolean("game.allowOpeningContainers", false);
-        this.verbose = config.getBoolean("game.verbose", false);
 
         GameMode tempGm;
 
@@ -71,6 +71,9 @@ public final class GameConfig {
         }
 
         this.gameMode = tempGm;
+
+        this.allowedBreakBlocksExist = config.contains("game.allowedBreakBlocks") || config.contains("game.allowed_break_blocks");
+        this.allowedPlaceBlocksExist = config.contains("game.allowedPlaceBlocks") || config.contains("game.allowed_place_blocks");
 
         if (config.contains("game.spawnPoints")) {
             for (String key : config.getConfigurationSection("game.spawnPoints").getKeys(false)) {
@@ -103,6 +106,7 @@ public final class GameConfig {
             }
         }
 
+        // DEPRECATED
         if (config.contains("game.allowed_break_blocks")) {
             for (String block : config.getStringList("game.allowed_break_blocks")) {
                 Material material = Material.getMaterial(block.toUpperCase());
@@ -112,6 +116,16 @@ public final class GameConfig {
             }
         }
 
+        if (config.contains("game.allowedBreakBlocks")) {
+            for (String block : config.getStringList("game.allowed_break_blocks")) {
+                Material material = Material.getMaterial(block.toUpperCase());
+                if (material != null) {
+                    allowedBreakBlocks.add(material);
+                }
+            }
+        }
+
+        // DEPRECATED
         if (config.contains("game.allowed_place_blocks")) {
             for (String block : config.getStringList("game.allowed_place_blocks")) {
                 Material material = Material.getMaterial(block.toUpperCase());
@@ -121,7 +135,26 @@ public final class GameConfig {
             }
         }
 
+        if (config.contains("game.allowedPlaceBlocks")) {
+            for (String block : config.getStringList("game.allowed_place_blocks")) {
+                Material material = Material.getMaterial(block.toUpperCase());
+                if (material != null) {
+                    allowedPlaceBlocks.add(material);
+                }
+            }
+        }
+
+        // DEPRECATED
         if (config.contains("game.blocked_damage_causes")) {
+            for (String damCause : config.getStringList("game.blocked_damage_causes")) {
+                try {
+                    DamageCause damageCause = DamageCause.valueOf(damCause.toUpperCase());
+                    blockedDamageCauses.add(damageCause);
+                } catch (IllegalArgumentException ignored) {} // _ works in 22+, if we ever migrate to Java 22+, change this to _
+            }
+        }
+
+        if (config.contains("game.blockedDamageCauses")) {
             for (String damCause : config.getStringList("game.blocked_damage_causes")) {
                 try {
                     DamageCause damageCause = DamageCause.valueOf(damCause.toUpperCase());
@@ -165,6 +198,14 @@ public final class GameConfig {
 
     public List<Material> getStartInventory() {
         return startInventory;
+    }
+
+    public boolean allowedBreakBlocksExist() {
+        return allowedBreakBlocksExist;
+    }
+
+    public boolean allowedPlaceBlocksExist() {
+        return allowedPlaceBlocksExist;
     }
 
     public Set<Material> getAllowedBreakBlocks() {
@@ -222,11 +263,7 @@ public final class GameConfig {
     public boolean getAllowOpeningContainers() {
         return allowOpeningContainers;
     }
-
-    public boolean getVerbose() {
-        return verbose;
-    }
-
+  
     public record SpawnPoint(int x, int y, int z) {
     }
 
