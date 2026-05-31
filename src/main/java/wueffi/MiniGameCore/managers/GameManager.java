@@ -259,7 +259,7 @@ public final class GameManager implements Listener {
         if (configFile.exists()) {
             return new GameConfig(configFile);
         } else {
-            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName() + ", this may cause NPEs.");
+            plugin.getLogger().warning("No config.yml found in world folder for " + worldFolder.getName() + ", this may cause Null-Pointer-Exceptions or other unwanted behaviour.");
             return null;
         }
     }
@@ -463,7 +463,8 @@ public final class GameManager implements Listener {
         GameConfig config = getConfig(lobby);
 
         if (!config.getAllowedBreakBlocks().contains(event.getBlock().getType()) || frozenPlayers.contains(player) || lobby.getLobbyState().equals("WAITING")) {
-            sendMGCError(player, " You are not allowed to break this block!");
+            // TODO: If the message has been sent, maybe don't send another one for the same block for 5-10 seconds?
+            sendMGCError(player, "You are not allowed to break this block!");
             event.setCancelled(true);
         }
     }
