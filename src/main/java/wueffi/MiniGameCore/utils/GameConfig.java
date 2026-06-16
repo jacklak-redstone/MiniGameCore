@@ -62,7 +62,7 @@ public final class GameConfig {
         this.silenceDeathMessages = config.getBoolean("game.silenceDeathMessages", false);
         this.doHunger = config.getBoolean("game.doHunger", false);
         this.allowOpeningContainers = config.getBoolean("game.allowOpeningContainers", false);
-        this.locatorBar = config.getBoolean("game.doLocatorBar", false);
+        this.locatorBar = config.getBoolean("game.enableLocatorBar", false);
 
         GameMode tempGm;
 

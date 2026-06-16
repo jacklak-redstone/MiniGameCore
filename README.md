@@ -92,7 +92,7 @@ All available options:
 | `doHunger`               | Whether players' hunger bars should deplete                       | ❌ No (default: false)                      |
 | `allowOpeningContainers` | Allows players to open containers before the game starts          | ❌ No (default: false)                      |
 | `gameMode`               | The game mode players spawn in when the game starts               | ❌ No (default: SURVIVAL)                   |
-| `doLocatorBar`           | Whether the player locator bar should be enabled                  | ❌ No (default: false)                      |
+| `enableLocatorBar`       | Whether the player locator bar should be enabled                  | ❌ No (default: false)                      |
 
 Example config for an 8 player Spleef-Game:
 ```
