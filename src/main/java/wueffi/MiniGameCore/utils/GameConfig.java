@@ -14,25 +14,25 @@ import java.util.List;
 import java.util.Set;
 
 public final class GameConfig {
-    public final boolean RespawnMode;
-    public final int RespawnDelay;
     private final GameMode gameMode;
     private final String gameName;
     private final String hostPerm;
     private final String joinPerm;
+    private final int timeLimit;
     private final int maxPlayers;
     private final int teams;
     private final int minPlayers;
+    private final int respawnDelay;
     private final List<SpawnPoint> spawnPoints = new ArrayList<>();
     private final List<TeamSpawnPoints> teamSpawnPoints = new ArrayList<>();
     private final List<Material> startInventory = new ArrayList<>();
     private final Set<Material> allowedBreakBlocks = new HashSet<>();
     private final Set<Material> allowedPlaceBlocks = new HashSet<>();
     private final Set<DamageCause> blockedDamageCauses = new HashSet<>();
+    private final boolean respawnMode;
     private final boolean doDurability;
     private final boolean allowPVP;
     private final boolean respawnByAPI;
-    private final int timeLimit;
     private final boolean allowFriendlyFire;
     private final boolean allowCrafting;
     private final boolean silenceDeathMessages;
@@ -40,6 +40,7 @@ public final class GameConfig {
     private final boolean allowOpeningContainers;
     private final boolean allowedBreakBlocksExist;
     private final boolean allowedPlaceBlocksExist;
+    private final boolean locatorBar;
 
     public GameConfig(File configFile) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
@@ -50,8 +51,8 @@ public final class GameConfig {
         this.maxPlayers = config.getInt("game.maxPlayers", 8);
         this.teams = config.getInt("game.teams", 0);
         this.minPlayers = config.getInt("game.minPlayers", 2);
-        this.RespawnMode = config.getBoolean("game.respawnMode", false);
-        this.RespawnDelay = config.getInt("game.respawnDelay", 0);
+        this.respawnMode = config.getBoolean("game.respawnMode", false);
+        this.respawnDelay = config.getInt("game.respawnDelay", 0);
         this.doDurability = config.getBoolean("game.doDurability", true);
         this.allowPVP = config.getBoolean("game.allowPVP", true);
         this.respawnByAPI = config.getBoolean("game.respawnByAPI", false);
@@ -61,6 +62,7 @@ public final class GameConfig {
         this.silenceDeathMessages = config.getBoolean("game.silenceDeathMessages", false);
         this.doHunger = config.getBoolean("game.doHunger", false);
         this.allowOpeningContainers = config.getBoolean("game.allowOpeningContainers", false);
+        this.locatorBar = config.getBoolean("game.doLocatorBar", false);
 
         GameMode tempGm;
 
@@ -217,7 +219,7 @@ public final class GameConfig {
     }
 
     public boolean getRespawnMode() {
-        return RespawnMode;
+        return respawnMode;
     }
 
     public boolean getDurabilityMode() {
@@ -236,11 +238,11 @@ public final class GameConfig {
         return allowFriendlyFire;
     }
 
-    public Integer getRespawnDelay() {
-        return RespawnDelay;
+    public int getRespawnDelay() {
+        return respawnDelay;
     }
 
-    public Integer getTimeLimit() {
+    public int getTimeLimit() {
         return timeLimit;
     }
 
@@ -263,7 +265,11 @@ public final class GameConfig {
     public boolean getAllowOpeningContainers() {
         return allowOpeningContainers;
     }
-  
+
+    public boolean getLocatorBar() {
+        return locatorBar;
+    }
+
     public record SpawnPoint(int x, int y, int z) {
     }
 

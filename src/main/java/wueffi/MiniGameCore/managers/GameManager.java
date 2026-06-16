@@ -346,6 +346,8 @@ public final class GameManager implements Listener {
             return null;
         }
 
+        newWorld.setGameRule(GameRule.LOCATOR_BAR, gameConfig.getLocatorBar());
+
         player.setGameMode(GameMode.ADVENTURE);
 
         int maxPlayers = gameConfig.getMaxPlayers();
