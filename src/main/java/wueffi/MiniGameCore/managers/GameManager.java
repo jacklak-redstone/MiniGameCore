@@ -532,7 +532,10 @@ public final class GameManager implements Listener {
                 player.teleport(lobbyWorld.getSpawnLocation());
             } else {
                 plugin.getLogger().warning("Lobby world was null! " + player + "," + lobby);
-                player.teleport(alivePlayers.get(lobby).getFirst());
+                List<Player> fallback = alivePlayers.get(lobby);
+                if (fallback != null && !fallback.isEmpty()) {
+                    player.teleport(fallback.getFirst().getLocation());
+                }
             }
             player.setGameMode(GameMode.SPECTATOR);
 
@@ -540,8 +543,8 @@ public final class GameManager implements Listener {
             if (config == null) return;
 
             Player killer = null;
-            UUID uuid = lastHit.remove(player.getUniqueId());
-            if (uuid != null) killer = Bukkit.getPlayer(uuid);
+            UUID killerUuid = lastHit.remove(player.getUniqueId());
+            if (killerUuid != null) killer = Bukkit.getPlayer(killerUuid);
 
             if (!config.getSilenceDeathMessages()) {
                 EntityDamageEvent damageEvent = player.getLastDamageCause();
@@ -550,12 +553,10 @@ public final class GameManager implements Listener {
 
                 if (config.getTeams() > 0) {
                     Team team = lobby.getTeamByPlayer(player);
-                    String color1 = "";
-                    if (team != null) color1 = team.getColorCode();
+                    String color1 = team != null ? team.getColorCode() : "";
 
-                    team = lobby.getTeamByPlayer(killer);
-                    String color2 = "";
-                    if (team != null) color2 = team.getColorCode();
+                    Team killerTeam = lobby.getTeamByPlayer(killer);
+                    String color2 = killerTeam != null ? killerTeam.getColorCode() : "";
 
                     if (killer != null) {
                         for (Player player2 : lobby.getPlayers()) {
@@ -580,16 +581,37 @@ public final class GameManager implements Listener {
             }
 
             if (!config.getRespawnByAPI()) {
-                List<Player> alive = alivePlayers.get(lobby);
-                if (alive != null) {
-                    alive.remove(player);
-                }
-
                 if (config.getTeams() > 0) {
                     Team team = lobby.getTeamByPlayer(player);
                     if (team == null) return;
-                    team.decreaseAlive();
-                    sendMGCError(player, "You died! §aYou are now spectating.");
+
+                    if (config.getRespawnMode()) {
+                        int delay = config.getRespawnDelay();
+                        UUID playerUuid = player.getUniqueId();
+                        Location respawnLocation = getRespawnPoint(playerUuid);
+
+                        if (respawnLocation != null) {
+                            new BukkitRunnable() {
+                                int secondsLeft = delay;
+
+                                @Override
+                                public void run() {
+                                    if (secondsLeft <= 0) {
+                                        player.teleport(respawnLocation);
+                                        player.setGameMode(config.getGameMode());
+                                        showTitle(player, "§aRespawned!", "", 10, 20, 10);
+                                        this.cancel();
+                                    } else {
+                                        showTitle(player, "§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
+                                        secondsLeft--;
+                                    }
+                                }
+                            }.runTaskTimer(plugin, 0, 20L);
+                        }
+                    } else {
+                        team.decreaseAlive();
+                        sendMGCError(player, "You died! §aYou are now spectating.");
+                    }
 
                     int aliveTeams = 0;
                     Team lastAliveTeam = null;
@@ -600,49 +622,62 @@ public final class GameManager implements Listener {
                         }
                     }
 
-                    if (aliveTeams == 1 && lastAliveTeam != null) {
-                        endGame(lobby, new Winner.TeamWinner(lastAliveTeam));
+                    if (aliveTeams <= 1) {
+                        if (lastAliveTeam != null) {
+                            endGame(lobby, new Winner.TeamWinner(lastAliveTeam));
+                        } else {
+                            endGame(lobby, new Winner.TieWinner(lobby.getPlayers()));
+                        }
                     }
                 } else {
+                    List<Player> alive = alivePlayers.get(lobby);
+                    if (alive != null) {
+                        alive.remove(player);
+                    }
+
                     if (!config.getRespawnMode()) {
                         sendMGCError(player, "You died! §aYou are now spectating.");
 
                         if (alive != null && alive.size() == 1) {
-                            Player winner = alive.getFirst();
-                            endGame(lobby, new Winner.PlayerWinner(winner));
+                            endGame(lobby, new Winner.PlayerWinner(alive.getFirst()));
+                        } else if (alive != null && alive.isEmpty()) {
+                            endGame(lobby, null);
                         }
                     } else {
                         int delay = config.getRespawnDelay();
-                        uuid = player.getUniqueId();
-                        Location respawnLocation = getRespawnPoint(uuid);
+                        UUID playerUuid = player.getUniqueId();
+                        Location respawnLocation = getRespawnPoint(playerUuid);
 
-                        new BukkitRunnable() {
-                            int secondsLeft = delay;
+                        if (respawnLocation != null) {
+                            new BukkitRunnable() {
+                                int secondsLeft = delay;
 
-                            @Override
-                            public void run() {
-                                if (secondsLeft <= 0) {
-                                    player.teleport(respawnLocation);
-                                    player.setGameMode(config.getGameMode());
-                                    showTitle(player, "§aRespawned!", "", 10, 20, 10);
+                                @Override
+                                public void run() {
+                                    if (secondsLeft <= 0) {
+                                        player.teleport(respawnLocation);
+                                        player.setGameMode(config.getGameMode());
+                                        showTitle(player, "§aRespawned!", "", 10, 20, 10);
 
-                                    List<Player> alive = alivePlayers.get(lobby);
-                                    if (alive != null && !alive.contains(player)) {
-                                        alive.add(player);
+                                        List<Player> currentAlive = alivePlayers.get(lobby);
+                                        if (currentAlive != null && !currentAlive.contains(player)) {
+                                            currentAlive.add(player);
+                                        }
+
+                                        this.cancel();
+                                    } else {
+                                        showTitle(player, "§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
+                                        secondsLeft--;
                                     }
-
-                                    this.cancel();
-                                } else {
-                                    showTitle(player, "§cRespawning in", "§c" + secondsLeft + " s", 0, 20, 0);
-                                    secondsLeft--;
                                 }
-                            }
-                        }.runTaskTimer(plugin, 0, 20L);
+                            }.runTaskTimer(plugin, 0, 20L);
+                        }
                     }
                 }
             }
         }
     }
+
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {

@@ -35,6 +35,6 @@ public final class MiniGameCoreAPI {
     }
 
     public static Location getRespawnLocation(UUID playerID) {
-        return  GameManager.getRespawnPoint(playerID);
+        return GameManager.getRespawnPoint(playerID);
     }
 }
