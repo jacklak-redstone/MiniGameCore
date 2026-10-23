@@ -89,6 +89,9 @@ public final class PlayerHandler implements Listener {
         Player player = event.getPlayer();
         GameManager.removeLastHitAndFrozen(player.getUniqueId());
         GameManager.playerDeath(player.getUniqueId());
-        Bukkit.getScheduler().runTaskLater(plugin, () -> PlayerReset(player), 5L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            PlayerReset(player);
+            InventoryCache.removeCache(player);
+        }, 5L);
     }
 }

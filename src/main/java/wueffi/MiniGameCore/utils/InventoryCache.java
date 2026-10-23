@@ -12,15 +12,17 @@ public class InventoryCache {
     private static final Map<Player, InventoryData> cache = new HashMap<>();
     private static final MiniGameCore plugin = MiniGameCore.getPlugin();
 
+
     public static void saveInventory(Player player) {
         if (!plugin.getResetInventories()) return;
+
         PlayerInventory inventory = player.getInventory();
 
         cache.put(player, new InventoryData(
-                inventory.getContents().clone(),
-                inventory.getArmorContents().clone(),
-                inventory.getItemInOffHand().clone(),
-                player.getItemOnCursor().clone()
+                cloneContents(inventory.getContents()),
+                cloneContents(inventory.getArmorContents()),
+                cloneItem(inventory.getItemInOffHand()),
+                cloneItem(player.getItemOnCursor())
         ));
     }
 
@@ -40,6 +42,23 @@ public class InventoryCache {
         player.setItemOnCursor(data.cursor.clone());
 
         player.updateInventory();
+    }
+
+    private static ItemStack[] cloneContents(ItemStack[] contents) {
+        ItemStack[] cloned = new ItemStack[contents.length];
+
+        for (int i = 0; i < contents.length; i++) {
+            cloned[i] = cloneItem(contents[i]);
+        }
+        return cloned;
+    }
+
+    private static ItemStack cloneItem(ItemStack item) {
+        return item == null ? null : item.clone();
+    }
+
+    public static void removeCache(Player player) {
+        cache.remove(player);
     }
 
     private record InventoryData(ItemStack[] contents, ItemStack[] armor, ItemStack offHand, ItemStack cursor) {}
