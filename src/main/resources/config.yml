@@ -2,3 +2,4 @@ available-games:
 banned-players:
 keep-worlds: false
 disable-scoreboard: false
+keep-inventories-after-games: true

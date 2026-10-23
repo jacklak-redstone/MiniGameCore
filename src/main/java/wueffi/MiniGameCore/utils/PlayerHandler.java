@@ -64,6 +64,7 @@ public final class PlayerHandler implements Listener {
             }
         }
         PlayerSoftReset(player);
+        InventoryCache.loadInventory(player);
         player.setGameMode(Bukkit.getDefaultGameMode());
         World mainWorld = Bukkit.getWorlds().getFirst();
         if (mainWorld != null) {
@@ -78,8 +79,6 @@ public final class PlayerHandler implements Listener {
         player.setSaturation(5);
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.setFireTicks(0);
-        player.setExp(0);
-        player.setLevel(69);
         player.getInventory().clear();
         player.getInventory().setArmorContents(null);
         player.setItemOnCursor(null);

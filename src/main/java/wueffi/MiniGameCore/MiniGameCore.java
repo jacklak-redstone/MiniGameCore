@@ -27,6 +27,7 @@ public final class MiniGameCore extends JavaPlugin {
     private List<String> availableGames;
     private List<UUID> bannedPlayers;
     private Boolean keepWorlds;
+    private Boolean resetInventories;
     public static final Component prefix = Component.text()
             .append(Component.text("[", NamedTextColor.GRAY))
             .append(Component.text("MiniGameCore", NamedTextColor.GOLD))
@@ -48,6 +49,7 @@ public final class MiniGameCore extends JavaPlugin {
         List<UUID> bannedPlayers = new ArrayList<>();
         boolean keepWorlds = getConfig().getBoolean("keep-worlds");
         boolean disableScoreBoard = getConfig().getBoolean("disable-scoreboard");
+        boolean resetInventories = getConfig().getBoolean("keep-inventories-after-games");
         for (String UUIDstring : getConfig().getStringList("banned-players")) {
             try {
                 UUID uuid = UUID.fromString(UUIDstring);
@@ -59,6 +61,7 @@ public final class MiniGameCore extends JavaPlugin {
         this.availableGames = availableGames;
         this.bannedPlayers = bannedPlayers;
         this.keepWorlds = keepWorlds;
+        this.resetInventories = resetInventories;
         getLogger().info("Config loaded!");
 
         lobbyManager = new LobbyManager();
@@ -120,6 +123,10 @@ public final class MiniGameCore extends JavaPlugin {
 
     public Boolean getKeepWorlds() {
         return keepWorlds;
+    }
+
+    public Boolean getResetInventories(){
+        return resetInventories;
     }
 
     private void writeBannedPlayers() {

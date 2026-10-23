@@ -149,6 +149,7 @@ public final class MiniGameCommand implements CommandExecutor {
                                 Location spawnLocation = world.getSpawnLocation();
                                 player1.teleport(spawnLocation);
                             }
+                            InventoryCache.saveInventory(player1);
                             PlayerHandler.PlayerSoftReset(player1);
                             player1.setGameMode(GameMode.ADVENTURE);
                             ScoreBoardManager.setPlayerStatus(player, "WAITING");
@@ -228,6 +229,7 @@ public final class MiniGameCommand implements CommandExecutor {
                                 Location spawnLocation = world.getSpawnLocation();
                                 player1.teleport(spawnLocation);
                             }
+                            InventoryCache.saveInventory(player1);
                             PlayerHandler.PlayerSoftReset(player1);
                             player1.setGameMode(GameMode.ADVENTURE);
                             ScoreBoardManager.setPlayerStatus(player, "WAITING");
@@ -255,6 +257,7 @@ public final class MiniGameCommand implements CommandExecutor {
                     Location spawnLocation = world1.getSpawnLocation();
                     player.teleport(spawnLocation);
                 }
+                InventoryCache.saveInventory(player);
                 PlayerHandler.PlayerSoftReset(player);
                 player.setGameMode(GameMode.ADVENTURE);
                 ScoreBoardManager.setPlayerStatus(player, "WAITING");
